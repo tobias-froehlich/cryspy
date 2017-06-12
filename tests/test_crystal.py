@@ -299,10 +299,10 @@ def test_Atomset():
     assert sg ** atomset == atomset1
     
     atomset_unpacked = cr.Atomset({
-        cr.Atom("S_1:Fe1", "Fe", fs("p -0.1  0  0")),
-        cr.Atom("S_1:Fe2", "Fe", fs("p  0.1  0  0")),
-        cr.Atom("S_2:Fe1", "Fe", fs("p -0.1 1/2 0")),
-        cr.Atom("S_2:Fe2", "Fe", fs("p  0.1 1/2 0"))
+        cr.Atom("S_1.Fe1", "Fe", fs("p -0.1  0  0")),
+        cr.Atom("S_1.Fe2", "Fe", fs("p  0.1  0  0")),
+        cr.Atom("S_2.Fe1", "Fe", fs("p -0.1 1/2 0")),
+        cr.Atom("S_2.Fe2", "Fe", fs("p  0.1 1/2 0"))
     })
     for subset in (sg ** atomset).menge:
         print(subset.name)

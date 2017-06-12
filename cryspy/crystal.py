@@ -449,7 +449,7 @@ class Atomset():
                 menge_new.add(item)
             else:
                 for subitem in item.atomset.menge:
-                    subitem.name = item.name + ':' + subitem.name
+                    subitem.name = item.name + '.' + subitem.name
                     menge_new.add(subitem)
                     
         return Atomset(menge_new)

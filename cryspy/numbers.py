@@ -34,6 +34,18 @@ from uncertainties import unumpy
 import numpy as np
 import cryspy.hash
 
+delta = 0.0000001
+
+def uapprox(u1, u2):
+    assert isinstance(u1, uc.UFloat) and isinstance(u2, uc.UFloat), \
+        "Error: cryspy.Numbers.uapprox() can only compare elements of " \
+        "type uncertainties.UFloat."
+    if      abs(u1.n - u2.n) < delta \
+        and abs(u1.s - u2.s) < delta \
+        and abs(uc.correlation_matrix([u1, u2])[0][1] - 1.0) < delta:
+        return True
+    else:
+        return False
 class Mixed(object):
     def __init__(self, value):
         assert isinstance(value, fr.Fraction) or \
@@ -106,7 +118,7 @@ class Mixed(object):
                     return self.value == right.value
                 if isinstance(self.value, uc.UFloat):
                     print("fast richtig!")
-                    return self.value == right.value
+                    return  uapprox(self.value, right.value)
                 if isinstance(self.value, int):
                     return self.value == right.value
                 if isinstance(self.value, float):

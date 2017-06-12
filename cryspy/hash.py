@@ -1,4 +1,5 @@
 import numpy as np
+from cryspy import numbers as nb
 
 
 floatlist = []
@@ -7,7 +8,7 @@ hashlist = []
 ufloatlist = []
 ufloathashlist = []
 
-delta = 1e-5
+delta = nb.delta
 
 def floathash(number):
     global floatlist
@@ -36,29 +37,10 @@ def ufloathash(number):
     global ufloatlist
     global ufloathashlist
     for i in range(len(ufloatlist)):
-        if ufloatlist[i] == number:
+        if nb.uapprox(ufloatlist[i], number):
             return ufloathashlist[i]
     h = len(ufloatlist)
     ufloatlist.append(number)
     ufloathashlist.append(h)
-    """for i in range(len(ufloatlist)):
-        if np.abs(number - ufloatlist[i]) < delta:
-            return ufloathashlist[i]
-    h = hash(number)
-    if len(ufloatlist) == 0:
-        ufloatlist = [number]
-        ufloathashlist = [h]
-    elif ufloatlist[0] > number:
-        ufloatlist = [number] + ufloatlist
-        ufloathashlist = [h] + ufloathashlist
-    elif ufloatlist[-1] < number:
-        ufloatlist = ufloatlist + [number]
-        ufloathashlist = ufloathashlist + [h]
-    else:
-        for i in range(len(ufloatlist) - 1):
-            if ufloatlist[i] < number < ufloatlist[i+1]:
-                ufloatlist = ufloatlist[0:i+1] + [number] + ufloatlist[i+1:]
-                ufloathashlist = ufloathashlist[0:i+1] + [h] + ufloathashlist[i+1:] 
-    """
     return h
 

@@ -109,6 +109,11 @@ def test_Mixed():
     assert nb.Mixed(0) == 0
     assert (nb.Mixed(0.1) == 0) == False
     assert nb.Mixed(fr.Fraction(2, 1)) == 2
+    u1 = nb.Mixed(uc.ufloat(0.1, 0.0001))
+    u2 = u1 + 1
+    u3 = u2 - 1
+    assert u1 == u3
+
 
     # Other relations
 
