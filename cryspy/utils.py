@@ -28,7 +28,6 @@ def calculate_twotheta(metric, wavelength, q):
 
 class Karussell:
     def __init__(self, metric, zerodirection, positivedirection):
-
         self.zerodir = zerodirection * (1 / metric.length(zerodirection))
         self.positivedir = positivedirection - self.zerodir * metric.dot(positivedirection, self.zerodir)
         self.positivedir *= 1 / metric.length(self.positivedir)
@@ -39,14 +38,37 @@ class Karussell:
         y = nb.sin(angle)
         return self.zerodir * x + self.positivedir * y
 
-def fill(atomset, extraextensions):
+def plate(name, metric, zerodirection, positivedirection, radius, num_of_corners):
+    assert isinstance(name, str), \
+        "First parameter of cryspy.utils.plate() must be of type str."
+    assert isinstance(metric, cryspy.geo.Metric), \
+        "Second parameter of cryspy.utils.plate() must be of type cryspy.geo.Metric."
+    assert isinstance(zerodirection, cryspy.geo.Dif) \
+        and isinstance(positivedirection, cryspy.geo.Dif), \
+        "Third and fourth parameter of cryspy.utils.plate() must be of typ cryspy.geo.Dif."
+    assert isinstance(radius, int) \
+        or isinstance(radius, float) \
+        or isinstance(radius, cryspy.numbers.Mixed), \
+        "Fifth parameter of cryspy.utils.plate must be of type int, float or cryspy.numbers.Mixed."
+    assert isinstance(num_of_corners, int), \
+        "Sixth parameter of cryspy.utils.plate must be of type int."
+    karussell = Karussell(metric, zerodirection, positivedirection)
+    twopi = 2 * np.pi
+    corners = []
+    for i in range(num_of_corners):
+        d = karussell.direction(i * twopi / num_of_corners)
+        corners.append(geo.origin + cryspy.geo.Dif(radius*d.value))
+    return cryspy.crystal.Face(name, corners)
+
+
+def fill_plusminus(atomset, extraextensions):
     assert isinstance(atomset, cryspy.crystal.Atomset), \
         "First argument of cryspy.utils.fill(...) must be of " \
         "type cryspy.crystal.Atomset."
     assert isinstance(extraextensions, list), \
         "Second argument of cryspy.utils.fill(...) must be of " \
         "type list."
-    assert len(extraextensions) == 3, \
+    assert len(extraextensions) == 6, \
         "Second argument of cryspy.utils.fill(...) must be a " \
         "list of three numbers."
     for item in extraextensions:
@@ -86,15 +108,105 @@ def fill(atomset, extraextensions):
 
     menge = atomset_new.menge
     menge_new = set([])
-    extra_x = extraextensions[0]
-    extra_y = extraextensions[1]
-    extra_z = extraextensions[2]
+    extra_xm = extraextensions[0]
+    extra_xp = extraextensions[1]
+    extra_ym = extraextensions[2]
+    extra_yp = extraextensions[3]
+    extra_zm = extraextensions[4]
+    extra_zp = extraextensions[5]
     for atom in menge:
-        if (0 - extra_x <= float(atom.pos.x()) <= 1 + extra_x) \
-            and (0 - extra_y <= float(atom.pos.y()) <= 1 + extra_y) \
-            and (0 - extra_z <= float(atom.pos.z()) <= 1 + extra_z):
+        if (0 - extra_xm <= float(atom.pos.x()) <= 1 + extra_xp) \
+            and (0 - extra_ym <= float(atom.pos.y()) <= 1 + extra_yp) \
+            and (0 - extra_zm <= float(atom.pos.z()) <= 1 + extra_zp):
             menge_new.add(atom)
     return cryspy.crystal.Atomset(menge_new)
+
+
+def fill_plusminus_clever(atomset, extraextensions):
+    assert isinstance(atomset, cryspy.crystal.Atomset), \
+        "First argument of cryspy.utils.fill(...) must be of " \
+        "type cryspy.crystal.Atomset."
+    assert isinstance(extraextensions, list), \
+        "Second argument of cryspy.utils.fill(...) must be of " \
+        "type list."
+    assert len(extraextensions) == 6, \
+        "Second argument of cryspy.utils.fill(...) must be a " \
+        "list of three numbers."
+    for item in extraextensions:
+        assert isinstance(item, cryspy.numbers.Mixed) \
+            or isinstance(item, float) or isinstance(item, int), \
+            "Scond argument of cryspy.utils.fill(...) must be a " \
+            "list of three numbers."
+
+    extra_xm = extraextensions[0]
+    extra_xp = extraextensions[1]
+    extra_ym = extraextensions[2]
+    extra_yp = extraextensions[3]
+    extra_zm = extraextensions[4]
+    extra_zp = extraextensions[5]
+
+    def pos_is_within_the_box(pos):
+        x = float(pos.x())
+        y = float(pos.y())
+        z = float(pos.z())
+        if (-extra_xm <= x <= 1 + extra_xp) \
+            and (-extra_ym <= y <= 1 + extra_yp) \
+            and (-extra_zm <= z <= 1 + extra_zp):
+            return True
+        else:
+            return False
+
+    newset = set([])
+    difxs = [fs("d -1 0 0"), fs("d 0 0 0"), fs("d 1 0 0")]
+    difys = [fs("d 0 -1 0"), fs("d 0 0 0"), fs("d 0 1 0")]
+    difzs = [fs("d 0 0 -1"), fs("d 0 0 0"), fs("d 0 0 1")]
+    for item in atomset.menge:
+        for xi in [0, 1, 2]:
+            for yi in [0, 1, 2]:
+                for zi in [0, 1, 2]:
+                    dif = difxs[xi] + difys[yi] + difzs[zi]
+                    if pos_is_within_the_box(item.pos + dif):
+                        ending = ""
+                        if xi == 0:
+                            ending += "l"
+                        if xi == 2:
+                            ending += "r"
+                        if yi == 0:
+                            ending += "b"
+                        if yi == 2:
+                            ending += "f"
+                        if zi == 0:
+                            ending += "d"
+                        if zi == 2:
+                            ending += "u"
+                        newitem = (item + ending) + dif
+                        newset.add(newitem)
+    return cryspy.crystal.Atomset(newset)
+
+
+def fill(atomset, extraextensions):
+    assert isinstance(atomset, cryspy.crystal.Atomset), \
+        "First argument of cryspy.utils.fill(...) must be of " \
+        "type cryspy.crystal.Atomset."
+    assert isinstance(extraextensions, list), \
+        "Second argument of cryspy.utils.fill(...) must be of " \
+        "type list."
+    assert len(extraextensions) == 3, \
+        "Second argument of cryspy.utils.fill(...) must be a " \
+        "list of three numbers."
+    for item in extraextensions:
+        assert isinstance(item, cryspy.numbers.Mixed) \
+            or isinstance(item, float) or isinstance(item, int), \
+            "Scond argument of cryspy.utils.fill(...) must be a " \
+            "list of three numbers."
+    return fill_plusminus_clever(
+               atomset,
+               [extraextensions[0], extraextensions[0],
+                extraextensions[1], extraextensions[1],
+                extraextensions[2], extraextensions[2]],
+           )
+
+
 
 
 def octahedron(name, top, one, two, three, four, bottom, 

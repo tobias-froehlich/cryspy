@@ -73,6 +73,17 @@ def test_Mixed():
     assert hash(me1) == hash(me2)
     assert (hash(me1) == hash(me3)) == False
 
+    a1 = nb.Mixed(uc.ufloat(-0.10914, 0.00005))
+    a2 = nb.Mixed(uc.ufloat(0.29777, 0.00004))
+    a3 = 1/2 - a2
+    a4 = -a2
+    a5 = -a3
+    a6 = -a1
+    summe = a1 + a2 + a3 + a4 + a5 + a6
+    null = nb.Mixed(uc.ufloat(0.0, 0.0))
+    assert hash(null) == hash(summe)
+
+
     # Equal
     assert nb.Mixed(q) == nb.Mixed(q)
     assert nb.Mixed(e) == nb.Mixed(e)

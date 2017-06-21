@@ -40,12 +40,22 @@ def uapprox(u1, u2):
     assert isinstance(u1, uc.UFloat) and isinstance(u2, uc.UFloat), \
         "Error: cryspy.Numbers.uapprox() can only compare elements of " \
         "type uncertainties.UFloat."
-    if      abs(u1.n - u2.n) < delta \
-        and abs(u1.s - u2.s) < delta \
-        and abs(uc.correlation_matrix([u1, u2])[0][1] - 1.0) < delta:
-        return True
+    if (abs(u1.s) > delta) and (abs(u2.s) > delta):
+        if      abs(u1.n - u2.n) < delta \
+            and abs(u1.s - u2.s) < delta \
+            and abs(uc.correlation_matrix([u1, u2])[0][1] - 1.0) < delta:
+            return True
+        else:
+            return False
+    elif (abs(u1.s) < delta) and (abs(u2.s) < delta):
+        if      abs(u1.n - u2.n) < delta:
+            return True
+        else:
+            return False
     else:
         return False
+
+
 class Mixed(object):
     def __init__(self, value):
         assert isinstance(value, fr.Fraction) or \

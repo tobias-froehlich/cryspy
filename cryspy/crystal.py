@@ -494,10 +494,18 @@ class Subset(Drawable):
                            for item in self.atomset.menge})
 
     def __add__(self, right):
-        assert isinstance(right, geo.Dif), \
+        assert isinstance(right, geo.Dif) \
+            or isinstance(right, str), \
             "Cannot add object of type %s to object of type Subset." \
             %(str(type(right)))
-        return right.to_Symmetry() ** self
+        if isinstance(right, geo.Dif):
+            return right.to_Symmetry() ** self
+        elif isinstance(right, str):
+            return Subset(self.name + right, self.pos, self.atomset.menge)
+        else:
+            return NotImplemented
+
+
 
     def __hash__(self):
         print("hash")

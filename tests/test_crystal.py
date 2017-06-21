@@ -311,6 +311,10 @@ def test_Atomset():
         == atomset1.names
     assert ((sg ** atomset).unpack_subsets()).names \
         == atomset_unpacked.names
+
+    atomset1 = cr.Atomset({cr.Atom("Cs1", "Cs", fs("p 0 0 0"))})
+    atomset2 = cr.Atomset({cr.Atom("Cs1", "Cs", fs("p 1 0 0"))})
+    assert (atomset1 + "bla") + fs("d 1 0 0") == atomset2
    
 def test_Subset():
     a1 = cr.Atom("Fe1", "Fe", fs("p 0 0 0"))
@@ -332,7 +336,17 @@ def test_Subset():
                         {cr.Atom("Fe1", "Fe", fs("p 1/2 0 0")), 
                          cr.Atom("Fe2", "Fe", fs("p 1/2 0 1/4"))})
     assert subset + fs("d 1/2 0 0") == subset5
+    subset_ = subset + "1"
+    assert subset == subset1
 
+    pos = cryspy.geo.Pos(cryspy.numbers.Matrix([[fs("1.0(1)")],[0],[0],[1]]))
+    subset1 = cr.Subset("S1", fs("p 0 0 0"), {cr.Atom("Cs1", "Cs", pos)})
+    subset2 = cr.Subset("S2", fs("p 1 0 0"), {cr.Atom("Cs1", "Cs", pos + fs("d 1 0 0"))})
+    print(subset1.pos)
+    print(subset2.pos)
+    print(((subset1 + "bla") + fs("d 1 0 0")).pos)
+    assert (subset1 + "bla") + fs("d 1 0 0") == subset2
+    assert hash((subset1 + "bla") + fs("d 1 0 0")) == hash(subset2)
 
 def test_structurefactor():
     asyunit = cr.Atomset({cr.Atom("Ca1", "Ca", fs("p 0     0     0")),
