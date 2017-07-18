@@ -298,11 +298,16 @@ def test_Transformation():
                                        [0, 0, 1, 0],
                                        [0, 0, 0, 1]]))
 
+    print(t1)
     assert t1.__str__() == "Transformation O -> (0, 0, 0)\n" \
                            "               then\n" \
                            "               a' = b\n" \
                            "               b' = a\n" \
-                           "               c' = c"
+                           "               c' = c\n" \
+                           "               reciprocal:\n" \
+                           "               h' = k\n" \
+                           "               k' = h\n" \
+                           "               l' = l"
 
     t2 = geo.Transformation(nb.Matrix([[1, 0, 0, fr.Fraction(1, 2)],
                                        [0, 1, 0, fr.Fraction(1, 4)],
@@ -313,7 +318,11 @@ def test_Transformation():
                            "               then\n" \
                            "               a' = a\n" \
                            "               b' = b\n" \
-                           "               c' = c"
+                           "               c' = c\n" \
+                           "               reciprocal:\n" \
+                           "               h' = h\n" \
+                           "               k' = k\n" \
+                           "               l' = l"
 
     assert isinstance(t2.inv(), geo.Transformation)
     assert t2 * t2.inv() == geo.Transformation(nb.Matrix.onematrix(4))
@@ -327,7 +336,11 @@ def test_Transformation():
                            "               then\n" \
                            "               a' = 1.0a\n" \
                            "               b' = b\n" \
-                           "               c' = c"
+                           "               c' = c\n" \
+                           "               reciprocal:\n" \
+                           "               h' = 1.0h\n" \
+                           "               k' = k\n" \
+                           "               l' = l"
 
     q1 = geo.Rec(nb.Matrix([[1, 0, 0, 0]]))
     t = geo.Transformation(nb.Matrix([[0, 1, 0, 0],
@@ -354,7 +367,12 @@ def test_Transformation():
                            "               then\n" \
                            "               a' = a\n" \
                            "               b' = b\n" \
-                           "               c' = 1/2c"
+                           "               c' = 1/2c\n" \
+                           "               reciprocal:\n" \
+                           "               h' = h\n" \
+                           "               k' = k\n" \
+                           "               l' = 1/2l"
+
     assert isinstance(t ** q1, geo.Rec)
     assert (t ** q1) == \
         geo.Rec(nb.Matrix([[0, 0, nb.Mixed(fr.Fraction(1, 2)), 0]]))
@@ -368,7 +386,11 @@ def test_Transformation():
                            "               then\n" \
                            "               a' = a\n" \
                            "               b' = 1/2c\n" \
-                           "               c' = -b"
+                           "               c' = -b\n" \
+                           "               reciprocal:\n" \
+                           "               h' = h\n" \
+                           "               k' = 1/2l\n" \
+                           "               l' = -k"
     assert isinstance(t ** q1, geo.Rec)
     print(t)
     assert (t ** q1) == \

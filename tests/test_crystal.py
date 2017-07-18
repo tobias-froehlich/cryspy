@@ -88,6 +88,9 @@ def test_Momentum():
     m1 = cr.Momentum("M", fs("p 0 0 1/2"), fs("d 0 0 1"))
     assert (m1 + "test").name == "Mtest"
 
+    m1 = cr.Momentum("M", fs("p 1 0 1/2"), fs("d 0 0 1"))
+    assert (m1 % geo.canonical) == cr.Momentum("M", fs("p 0 0 1/2"), fs("d 0 0 1"))
+
 
 def test_Bond():
     b = cr.Bond("B", fs("p 0 0 0"), fs("p 0 0 1/2"))
@@ -106,7 +109,7 @@ def test_Bond():
     b3 = cr.Bond("B", fs("p 0 0 0"), fs("p 1 2 3"))
     b4 = cr.Bond("B", fs("p 0 0 1/2"), fs("p 0 0 0"))
     assert hash(b) == hash(b4)
-    assert (b == b4) == False
+    assert b == b4
     assert b == b1
     assert (b == b2) == False
     assert (hash(b) == hash(b3)) == False
@@ -116,6 +119,15 @@ def test_Bond():
     assert fs("{x+3/2,y,z}") ** b == cr.Bond("B", fs("p 1/2 0 0"), fs("p 1/2 0 1/2"))
     b = cr.Bond("B", fs("p 0 0 0"), fs("p 0 0 1/2"))
     assert (b + "test").name == "Btest"
+    b1 = cr.Bond("B", fs("p 0.09 0 0"), fs("p -0.1 0 0"))
+    b2 = cr.Bond("B", fs("p -0.1 0 0"), fs("p 0.09 0 0"))
+    b  = cr.Bond("B", fs("p  0.9 0 0"), fs("p 1.09 0 0"))
+    print((b1 % geo.canonical).start)
+    print((b1 % geo.canonical).target)
+    print(b.start)
+    print(b.target)
+    assert b1 % geo.canonical == b
+    assert b2 % geo.canonical == b
 
 
 def test_Face():
@@ -336,6 +348,27 @@ def test_Subset():
                         {cr.Atom("Fe1", "Fe", fs("p 1/2 0 0")), 
                          cr.Atom("Fe2", "Fe", fs("p 1/2 0 1/4"))})
     assert subset + fs("d 1/2 0 0") == subset5
+
+    T = fs(
+        "O->(0,0,1/2)\n"
+        "then\n"
+        "a' = 2a\n"
+        "b' = b\n"
+        "c' = c"
+    )
+    subset51 = cr.Subset("Sub", fs("p 1/4 0 -3/8"),
+                         {cr.Atom("Fe1", "Fe", fs("p 1/4 0 -1/2")),
+                          cr.Atom("Fe2", "Fe", fs("p 1/4 0 -1/4"))})
+    assert T ** subset5 == subset51
+
+    subset6 = cr.Subset("Sub", fs("p 1/2 1 1/8"),
+                        {cr.Atom("Fe1", "Fe", fs("p 1/2  5/4 0")), 
+                         cr.Atom("Fe2", "Fe", fs("p 1/2  3/4 1/4"))})
+    subset61 = cr.Subset("Sub", fs("p 1/2 0 1/8"),
+                        {cr.Atom("Fe1", "Fe", fs("p 1/2  1/4 0")), 
+                         cr.Atom("Fe2", "Fe", fs("p 1/2 -1/4 1/4"))})
+    assert subset6 % geo.canonical == subset61
+
     subset_ = subset + "1"
     assert subset == subset1
 

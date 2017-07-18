@@ -139,6 +139,13 @@ class Momentum(Drawable):
         else:
             return NotImplemented
 
+    def __mod__(self, right):
+        assert isinstance(right, geo.Transgen), \
+            "I cannot take an object of type Atom " \
+            "modulo an object of type %s" % (type(right))
+        return Momentum(self.name, self.pos % right, self.direction)
+
+
     def __hash__(self):
         string = "momentum%i,%i" \
             % (hash(self.pos), hash(self.direction))
@@ -187,7 +194,8 @@ class Bond(Drawable):
 
     def __eq__(self, right):
         if isinstance(right, Bond):
-            if (self.start == right.start) and (self.target == right.target):
+            if   (self.start == right.start) and (self.target == right.target) \
+              or (self.start == right.target) and (self.target == right.start):
                 return True
             else:
                 return False
@@ -218,6 +226,17 @@ class Bond(Drawable):
             return result
         else:
             return NotImplemented
+
+    def __mod__(self, right):
+        assert isinstance(right, geo.Transgen), \
+            "Cannot apply object of type %s to object of type " \
+            "cryspy.crystal.Bond."%(str(type(left)))
+        if isinstance(right, geo.Transgen):
+            pos_old = geo.centre_of_gravity([self.start, self.target])
+            pos_new = pos_old % right
+            correct = (pos_new - pos_old).to_Symmetry()
+            return Bond(self.name, correct ** self.start, correct ** self.target)
+
 
     def __hash__(self):
         # The order of start and target does not matter.
@@ -480,10 +499,15 @@ class Subset(Drawable):
         return "Subset"
 
     def __rpow__(self, left):
-        assert isinstance(left, geo.Symmetry) or isinstance(left, geo.Coset), \
+        assert isinstance(left, geo.Symmetry) \
+            or isinstance(left, geo.Transformation) \
+            or isinstance(left, geo.Coset), \
             "Cannot apply object of type %s to object of type " \
-            "cryspy.crystalSubset."%(str(type(left)))
+            "cryspy.crystal.Subset."%(str(type(left)))
         if isinstance(left, geo.Symmetry):
+            return Subset(self.name, left**self.pos,
+                          {left ** item for item in self.atomset.menge})
+        elif isinstance(left, geo.Transformation):
             return Subset(self.name, left**self.pos,
                           {left ** item for item in self.atomset.menge})
         elif isinstance(left, geo.Coset):
@@ -492,6 +516,18 @@ class Subset(Drawable):
             return Subset(self.name, pos,
                           {correct ** (left.symmetry ** item)
                            for item in self.atomset.menge})
+   
+    def __mod__(self, right):
+        assert isinstance(right, geo.Transgen), \
+            "Cannot apply object of type %s to object of type " \
+            "cryspy.crystal.Subset."%(str(type(left)))
+        if isinstance(right, geo.Transgen):
+            pos = self.pos % right
+            correct = (pos - self.pos).to_Symmetry()
+            return Subset(self.name, pos,
+                          {correct ** item
+                           for item in self.atomset.menge})
+
 
     def __add__(self, right):
         assert isinstance(right, geo.Dif) \

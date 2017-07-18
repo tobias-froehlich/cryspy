@@ -484,14 +484,11 @@ class Pointgroup:
 class Transformation(Operator):
     def __str__(self):
         result = 'Transformation '
+        # direct space for axes:
         m = self.value.inv()
         Ox = m.liste[0].liste[3]
         Oy = m.liste[1].liste[3]
         Oz = m.liste[2].liste[3]
-        matrix = nb.Matrix([[1, 0, 0, Ox],
-                            [0, 1, 0, Oy],
-                            [0, 0, 1, Oz],
-                            [0, 0, 0, 1]])
         result = "Transformation O -> (%s, %s, %s)\n" \
                  "               then\n" % \
         (Ox.__str__(), Oy.__str__(), Oz.__str__())
@@ -502,12 +499,27 @@ class Transformation(Operator):
              nb.Row([m.liste[3].liste[0], m.liste[3].liste[1], m.liste[3].liste[2], 1])])
         terms = []
         for i in range(3):
-            print(matrix.liste[i].liste[0], matrix.liste[i].liste[1], matrix.liste[i].liste[2], matrix.liste[i].liste[3])
             terms.append(linearterm2str(matrix.liste[i].liste,
                                         ["a", "b", "c", '']))
-        return result + "               a' = " + terms[0] + "\n" \
-                      + "               b' = " + terms[1] + "\n" \
-                      + "               c' = " + terms[2]
+        result =  result + "               a' = " + terms[0] + "\n" \
+                         + "               b' = " + terms[1] + "\n" \
+                         + "               c' = " + terms[2] + "\n"
+        
+        # reciprocal space for hkl components:
+        matrix = nb.Matrix(
+            [nb.Row([m.liste[0].liste[0], m.liste[1].liste[0], m.liste[2].liste[0]]),
+             nb.Row([m.liste[0].liste[1], m.liste[1].liste[1], m.liste[2].liste[1]]),
+             nb.Row([m.liste[0].liste[2], m.liste[1].liste[2], m.liste[2].liste[2]])])
+        
+        terms = []
+        for i in range(3):
+            terms.append(linearterm2str(matrix.liste[i].liste,
+                                        ["h", "k", "l"]))
+        result = result + "               reciprocal:\n"
+        result = result + "               h' = " + terms[0] + "\n" \
+                        + "               k' = " + terms[1] + "\n" \
+                        + "               l' = " + terms[2]
+        return result
 
     def inv(self):
         return Transformation(self.value.inv())
