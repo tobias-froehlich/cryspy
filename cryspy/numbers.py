@@ -127,7 +127,6 @@ class Mixed(object):
                 if isinstance(self.value, fr.Fraction):
                     return self.value == right.value
                 if isinstance(self.value, uc.UFloat):
-                    print("fast richtig!")
                     return  uapprox(self.value, right.value)
                 if isinstance(self.value, int):
                     return self.value == right.value

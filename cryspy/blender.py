@@ -18,7 +18,7 @@ def make_blender_script(atomset, metric, structurename, outfilename):
              "import bmesh\n" \
              "\n"
 
-    atomset = atomset.unpack_subsets()
+#    atomset = atomset.unpack_subsets()
 
     # Delete the old structure, if exists:
     outstr += "for ob in bpy.data.objects:\n"
@@ -85,12 +85,21 @@ def make_blender_script(atomset, metric, structurename, outfilename):
     outstr += "posobject = bpy.context.object\n"
     outstr += "posobject.name = '%s.Positions'\n" % (structurename)
 
+    outstr += draw_atomset_or_subset(structurename, atomset, t)
+
+    outfile = open(outfilename, "w")
+    outfile.write(outstr)
+    outfile.close()
+
+def draw_atomset_or_subset(structurename, atomset, t):
+    outstr = ""
     # Inspect atomset for different kinds of object and sort them into different lists
     typs = []
     atomlist = []
     momentumlist = []
     bondlist = []
     facelist = []
+    subsetlist = []
     for item in atomset.menge:
         if isinstance(item, crystal.Atom):
             atomlist.append(item)
@@ -100,6 +109,8 @@ def make_blender_script(atomset, metric, structurename, outfilename):
             bondlist.append(item)
         elif isinstance(item, crystal.Face):
             facelist.append(item)
+        elif isinstance(item, crystal.Subset):
+            subsetlist.append(item)
 
     # Create a mesh for each atom-type, respectively
     for atom in atomlist:
@@ -241,10 +252,11 @@ def make_blender_script(atomset, metric, structurename, outfilename):
     outstr += "        ob.select = False\n"
     outstr += "bpy.ops.object.shade_smooth()\n"
 
-    outfile = open(outfilename, "w")
-    outfile.write(outstr)
-    outfile.close()
+    # Draw all Susets:
+    for subset in subsetlist:
+        outstr += draw_atomset_or_subset(structurename + '.subset.name', subset.atomset, t)
 
+    return outstr
 
 def add_axis(structurename, arrowname, x, y, z):
     outstr = add_arrow(structurename, arrowname, 0, 0, 0, x, y, z,

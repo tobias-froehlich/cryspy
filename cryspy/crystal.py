@@ -211,7 +211,12 @@ class Bond(Drawable):
                 result.set_thickness(self.thickness)
             return result
         elif isinstance(right, str):
-            return Bond(self.name + right, self.start, self.target)
+            result = Bond(self.name + right, self.start, self.target)
+            if self.has_color:
+                result.set_color(self.color)
+            if self.has_thickness:
+                result.set_thickness(self.thickness)
+            return result
         else:
             return NotImplemented
 
@@ -232,10 +237,16 @@ class Bond(Drawable):
             "Cannot apply object of type %s to object of type " \
             "cryspy.crystal.Bond."%(str(type(left)))
         if isinstance(right, geo.Transgen):
-            pos_old = geo.centre_of_gravity([self.start, self.target])
-            pos_new = pos_old % right
-            correct = (pos_new - pos_old).to_Symmetry()
-            return Bond(self.name, correct ** self.start, correct ** self.target)
+            pos_new = self.pos % right
+            correct = (pos_new - self.pos).to_Symmetry()
+            new_bond = Bond(
+                self.name, correct ** self.start, correct ** self.target
+            )
+            if self.has_color:
+                new_bond.set_color(self.color)
+            if self.has_thickness:
+                new_bond.set_thickness(self.thickness)
+            return new_bond
 
 
     def __hash__(self):

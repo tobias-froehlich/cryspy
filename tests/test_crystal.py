@@ -120,6 +120,8 @@ def test_Bond():
     b = cr.Bond("B", fs("p 0 0 0"), fs("p 0 0 1/2"))
     assert (b + "test").name == "Btest"
     b1 = cr.Bond("B", fs("p 0.09 0 0"), fs("p -0.1 0 0"))
+    b1.set_color((1, 0, 0))
+    b1.set_thickness(0.5)
     b2 = cr.Bond("B", fs("p -0.1 0 0"), fs("p 0.09 0 0"))
     b  = cr.Bond("B", fs("p  0.9 0 0"), fs("p 1.09 0 0"))
     print((b1 % geo.canonical).start)
@@ -128,6 +130,10 @@ def test_Bond():
     print(b.target)
     assert b1 % geo.canonical == b
     assert b2 % geo.canonical == b
+    assert (b1 % geo.canonical).color == b1.color
+    assert (b1 % geo.canonical).has_color == b1.has_color
+    assert (b1 % geo.canonical).thickness == b1.thickness
+    assert (b1 % geo.canonical).has_thickness == b1.has_thickness
 
 
 def test_Face():
