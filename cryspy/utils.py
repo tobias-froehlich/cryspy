@@ -384,3 +384,25 @@ def read_atomset_from_cif(infilepathname):
     infile.close()
     return cryspy.crystal.Atomset(menge)
 
+
+def calculate_transformation_for_normalized_axes(metric):
+    # Returns the basis transformation matrix that is needed
+    # to get from metric to a new metric with the following
+    # properties:
+    # * Directions of basis vectors: The same as metric
+    # * Lengths of basis vectors: 1
+    #
+    # metric: type cryspy.geo.Metric
+    
+    l1 = metric.length(fs("d 1 0 0"))
+    l2 = metric.length(fs("d 0 1 0"))
+    l3 = metric.length(fs("d 0 0 1"))
+
+    return cryspy.geo.Transformation(
+               cryspy.numbers.Matrix([
+                   [l1, 0, 0, 0],
+                   [0, l2, 0, 0],
+                   [0, 0, l3, 0],
+                   [0, 0,  0, 1]
+               ])
+           )
