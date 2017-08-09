@@ -11,6 +11,9 @@ ufloathashlist = []
 delta = nb.delta
 
 def floathash(number):
+   return floathash_new(number)
+
+def floathash_old(number):
     global floatlist
     global hashlist
     for i in range(len(floatlist)):
@@ -32,6 +35,41 @@ def floathash(number):
                 floatlist = floatlist[0:i+1] + [number] + floatlist[i+1:]
                 hashlist = hashlist[0:i+1] + [h] + hashlist[i+1:] 
     return h
+
+def floathash_new(number):
+    global floatlist
+    global hashlist
+    n = len(floatlist)
+    if n == 0:
+        h = hash(number)
+        floatlist = [number]
+        hashlist = [h]
+        return h
+    imin = 0
+    imax = n-1
+    def search(imin, imax):
+        global floatlist
+        global hashlist
+        imid = (imin + imax)//2
+        if abs(floatlist[imid] - number) < delta:
+            return hashlist[imid]
+        else:
+            if imin == imax:
+                h = hash(number)
+                if floatlist[imid] < number:
+                    floatlist[imid+1:imid+1] = [number]
+                    hashlist[imid+1:imid+1] = [h]
+                else:
+                    floatlist[imid:imid] = [number]
+                    hashlist[imid:imid] = [h]
+                return h
+            else:
+                if floatlist[imid] < number:
+                    return search(imid+1, imax)
+                else:
+                    return search(imin, imid)
+    return search(imin, imax)
+
 
 def ufloathash(number):
     global ufloatlist
