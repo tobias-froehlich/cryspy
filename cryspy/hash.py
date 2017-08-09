@@ -7,6 +7,7 @@ hashlist = []
 
 ufloatlist = []
 ufloathashlist = []
+maxufloathash = -1
 
 delta = nb.delta
 
@@ -70,8 +71,67 @@ def floathash_new(number):
                     return search(imin, imid)
     return search(imin, imax)
 
+def ufloathash_new(number):
+    global ufloatlist
+    global ufloathashlist
+    global maxufloathash
+    n = len(ufloatlist)
+    if n == 0:
+        h = 1
+        ufloatlist = [number]
+        ufloathashlist = [h]
+        maxufloathash = h
+        return h
+    imin = 0
+    imax = n-1
+    def search(imin, imax):
+        global ufloatlist
+        global ufloathashlist
+        global maxufloathash
+        n = len(ufloatlist)
+        imid = (imin + imax)//2
+        if abs(ufloatlist[imid].value.n - number.value.n) < delta :
+            i = imid
+            while (abs(ufloatlist[i].value.n - number.value.n) < delta) and i >= 0:
+                if ufloatlist[i] == number:
+                    return ufloathashlist[i]
+                i -= 1
+            i = imid
+            while (i < n) and (abs(ufloatlist[i].value.n - number.value.n) < delta):
+                if ufloatlist[i] == number:
+                    return ufloathashlist[i]
+                i += 1
+            h = maxufloathash + 1
+            maxufloathash = h
+            ufloatlist[i+1:i+1] = [number]
+            ufloathashlist[i+1:i+1] = [h]
+            return h
+        else:
+
+            if imin == imax:
+                h = maxufloathash + 1
+                maxufloathash = h
+                if ufloatlist[imid].value.n < number.value.n:
+                    ufloatlist[imid+1:imid+1] = [number]
+                    ufloathashlist[imid+1:imid+1] = [h]
+                else:
+                    ufloatlist[imid:imid] = [number]
+                    ufloathashlist[imid:imid] = [h]
+                return h
+            else:
+                if ufloatlist[imid].value.n < number.value.n:
+                    return search(imid+1, imax)
+                else:
+                    return search(imin, imid)
+    return search(imin, imax)
+
+
+
 
 def ufloathash(number):
+    return ufloathash_new(number)
+
+def ufloathash_old(number):
     global ufloatlist
     global ufloathashlist
     for i in range(len(ufloatlist)):
