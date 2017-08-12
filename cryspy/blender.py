@@ -252,9 +252,9 @@ def draw_atomset_or_subset(structurename, atomset, t):
     outstr += "        ob.select = False\n"
     outstr += "bpy.ops.object.shade_smooth()\n"
 
-    # Draw all Susets:
+    # Draw all Subsets:
     for subset in subsetlist:
-        outstr += draw_atomset_or_subset(structurename + '.subset.name', subset.atomset, t)
+        outstr += draw_atomset_or_subset(structurename + '.' + subset.name, subset.atomset, t)
 
     return outstr
 

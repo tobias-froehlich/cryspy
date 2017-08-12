@@ -5,6 +5,15 @@ import cryspy
 from cryspy.fromstr import fromstr as fs
 import numpy as np
 
+approxdelta = 0.00000001
+
+def approx(x1, x2):
+    x1 = cryspy.numbers.Mixed(x1)
+    x2 = cryspy.numbers.Mixed(x2)
+    if isinstance(x1.value, float) or isinstance(x2.value, float):
+        return abs(x1.value - x2.value) < approxdelta
+    else:
+        return x1 == x2
 
 def test_Karussell():
     metric = cryspy.geo.Cellparameters(1, 1, 1, 90, 90, 90).to_Metric()
@@ -30,6 +39,7 @@ def test_fill():
     atomset = cryspy.utils.fill(atomset, [0.1, 0.1, 0.1])
     assert len(atomset.menge) == 8
 
+<<<<<<< HEAD
 def test_ldu_decomposition():
     A = fs("< 5 >")
     assert cryspy.utils.ldu_decomposition(A) == \
@@ -43,3 +53,32 @@ def test_ldu_decomposition():
     assert L == fs("1 0 0 0 \n 2 1 0 0 \n 4 3 1 0 \n 3 4 1 1")
     assert D == fs("2 0 0 0 \n 0 1 0 0 \n 0 0 2 0 \n 0 0 0 2")
     assert U == fs("1 1/2 1/2 0 \n 0 1 1 1 \n 0 0 1 1 \n 0 0 0 1")
+=======
+
+def test_calculate_transformation_for_normalized_axes():
+    
+
+    metrics = [cryspy.geo.Cellparameters(1, 1, 1, 90, 90, 90).to_Metric(),
+               cryspy.geo.Cellparameters(2, 1, 3, 90, 90, 40).to_Metric(),
+               cryspy.geo.Cellparameters(3.0, 2.7, 3, 60.8, 67.9, 60).to_Metric(),
+               cryspy.geo.Cellparameters(1.23, 3.8, 8.4, 60, 70, 80).to_Metric()
+    ]
+    for metric1 in metrics:
+        T = cryspy.utils.calculate_transformation_for_normalized_axes(metric1)
+        metric2 = T ** metric1
+        print(fs("d 1 0 0"))
+        print(T ** fs("d 1 0 0"))
+        assert approx(metric2.dangle(fs("d 1 0 0"), T ** fs("d 1 0 0")), 0)
+        assert approx(metric2.dangle(fs("d 0 1 0"), T ** fs("d 0 1 0")), 0)
+        assert approx(metric2.dangle(fs("d 0 0 1"), T ** fs("d 0 0 1")), 0)
+        assert approx(metric2.dangle(fs("d 0 1 0"), fs("d 0 0 1")),
+               metric1.dangle(fs("d 0 1 0"), fs("d 0 0 1")))
+        assert approx(metric2.dangle(fs("d 0 0 1"), fs("d 1 0 0")),
+               metric1.dangle(fs("d 0 0 1"), fs("d 1 0 0")))
+        assert approx(metric2.dangle(fs("d 1 0 0"), fs("d 0 1 0")),
+               metric1.dangle(fs("d 1 0 0"), fs("d 0 1 0")))
+        assert approx(metric1.length(T.inv() ** fs("d 1 0 0")), 1)
+        assert approx(metric1.length(T.inv() ** fs("d 0 1 0")), 1)
+        assert approx(metric1.length(T.inv() ** fs("d 0 0 1")), 1)
+    
+>>>>>>> origin/master
