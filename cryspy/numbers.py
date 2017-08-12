@@ -966,13 +966,20 @@ class Matrix(object):
         assert (numcols1 == numcols2), \
             "I cannot vglue (vertical glue) Matrices with different numbers " \
             "of cols."
-
         def row(i):
             if i < numrows1:
                 return left.liste[i]
             else:
                 return right.liste[i - numrows1]
         return Matrix([row(i) for i in range(numrows1 + numrows2)])
+
+    def hglue(left, right):
+        (numrows1, numcols1) = left.shape()
+        (numrows2, numcols2) = right.shape()
+        assert (numrows1 == numrows2), \
+            "I cannot hglue (horizontal glue) Matrices with different numbers " \
+            "of rows."
+        return Matrix([left.liste[i].liste + right.liste[i].liste for i in range(numrows1)])
 
     def subtract_x_times_rowj_from_rowi(self, x, i, j):
         new = deepcopy(self)

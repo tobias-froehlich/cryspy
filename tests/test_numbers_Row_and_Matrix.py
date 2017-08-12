@@ -327,6 +327,14 @@ def test_Matrix():
     M2 = nb.Matrix([[4, 5, 6]])
     assert nb.Matrix.vglue(M1, M2) == nb.Matrix([[1, 2, 3], [4, 5, 6]])
 
+    # hglue
+
+    M1 = nb.Matrix([[1, 2, 3], [4, 5, 6]])
+    M2 = nb.Matrix([[8], [9]])
+    assert nb.Matrix.hglue(M1, M2) == \
+        nb.Matrix([[1, 2, 3, 8], [4, 5, 6, 9]])
+
+
     # subtract_x_times_rowj_from_rowi
 
     M = nb.Matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])

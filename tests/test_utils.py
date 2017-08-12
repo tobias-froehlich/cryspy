@@ -29,3 +29,17 @@ def test_fill():
     atomset = cryspy.crystal.Atomset({cryspy.crystal.Atom("Fe1", "Fe", fs("p 0 0 0"))})
     atomset = cryspy.utils.fill(atomset, [0.1, 0.1, 0.1])
     assert len(atomset.menge) == 8
+
+def test_ldu_decomposition():
+    A = fs("< 5 >")
+    assert cryspy.utils.ldu_decomposition(A) == \
+        [fs("<1>"), fs("<5>"), fs("<1>")]
+    A = fs(" 2 1 1 0 \n 4 3 3 1 \n 8 7 9 5 \n 6 7 9 8")
+
+    [L, D, U] = cryspy.utils.ldu_decomposition(A)
+    print(L)
+    print(D)
+    print(U)
+    assert L == fs("1 0 0 0 \n 2 1 0 0 \n 4 3 1 0 \n 3 4 1 1")
+    assert D == fs("2 0 0 0 \n 0 1 0 0 \n 0 0 2 0 \n 0 0 0 2")
+    assert U == fs("1 1/2 1/2 0 \n 0 1 1 1 \n 0 0 1 1 \n 0 0 0 1")

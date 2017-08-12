@@ -384,3 +384,45 @@ def read_atomset_from_cif(infilepathname):
     infile.close()
     return cryspy.crystal.Atomset(menge)
 
+
+def ldu_decomposition(A):
+    # LDU-Decomposition:
+    # A square Matrix A is (if possible) decomposed into
+    # a product L*D*U, wherein
+    # L is a unipotent lower triangle matrix
+    # D is a diagonal matrix
+    # U is a unipotent upper triangle matrix
+    shape = A.shape()
+    assert shape[0] == shape[1], \
+        "Error: I can only do a LDU-decomposition " \
+        "of a square matrix."
+    n = shape[0]
+    if n == 1:
+        return [
+            cryspy.numbers.Matrix([[1]]),
+            A,
+            cryspy.numbers.Matrix([[1]])
+        ]
+    else:
+        a11 = A.liste[0].liste[0]
+        v = A.block(1, n, 0, 1)
+        w = A.block(0, 1, 1, n)
+        B = A.block(1, n, 1, n)
+        
+        A_sub = B - (1/a11) * (v*w)
+        [L_sub, D_sub, U_sub] = ldu_decomposition(A_sub)
+        L = cryspy.numbers.Matrix.vglue(
+            cryspy.numbers.Matrix.hglue(cryspy.numbers.Matrix([[1]]), cryspy.numbers.Matrix([[0]*(n-1)])),
+            cryspy.numbers.Matrix.hglue((1/a11)*v, L_sub)
+        )
+        D = cryspy.numbers.Matrix.vglue(
+            cryspy.numbers.Matrix.hglue(cryspy.numbers.Matrix([[a11]]), cryspy.numbers.Matrix([[0]*(n-1)])),
+            cryspy.numbers.Matrix.hglue(cryspy.numbers.Matrix([[0]]*(n-1)), D_sub)
+        )
+        U = cryspy.numbers.Matrix.vglue(
+            cryspy.numbers.Matrix.hglue(cryspy.numbers.Matrix([[1]]), (1/a11) * w),
+            cryspy.numbers.Matrix.hglue(cryspy.numbers.Matrix([[0]]*(n-1)), U_sub)
+        )
+        return [L, D, U]
+        
+    
