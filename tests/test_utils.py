@@ -39,6 +39,21 @@ def test_fill():
     atomset = cryspy.utils.fill(atomset, [0.1, 0.1, 0.1])
     assert len(atomset.menge) == 8
 
+<<<<<<< HEAD
+def test_ldu_decomposition():
+    A = fs("< 5 >")
+    assert cryspy.utils.ldu_decomposition(A) == \
+        [fs("<1>"), fs("<5>"), fs("<1>")]
+    A = fs(" 2 1 1 0 \n 4 3 3 1 \n 8 7 9 5 \n 6 7 9 8")
+
+    [L, D, U] = cryspy.utils.ldu_decomposition(A)
+    print(L)
+    print(D)
+    print(U)
+    assert L == fs("1 0 0 0 \n 2 1 0 0 \n 4 3 1 0 \n 3 4 1 1")
+    assert D == fs("2 0 0 0 \n 0 1 0 0 \n 0 0 2 0 \n 0 0 0 2")
+    assert U == fs("1 1/2 1/2 0 \n 0 1 1 1 \n 0 0 1 1 \n 0 0 0 1")
+=======
 
 def test_calculate_transformation_for_normalized_axes():
     
@@ -66,3 +81,4 @@ def test_calculate_transformation_for_normalized_axes():
         assert approx(metric1.length(T.inv() ** fs("d 0 1 0")), 1)
         assert approx(metric1.length(T.inv() ** fs("d 0 0 1")), 1)
     
+>>>>>>> origin/master
