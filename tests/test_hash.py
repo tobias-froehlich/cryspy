@@ -210,7 +210,6 @@ def test_ufloathash_6():
     cryspy.hash.maxufloathash = -1
 
     a = fs("1.2(1)")
-
     h = cryspy.hash.ufloathash(a)
     assert h == 1
     assert cryspy.hash.ufloatlist == [a]
@@ -240,5 +239,82 @@ def test_ufloathash_6():
     assert cryspy.hash.ufloatlist == [a, b, e]
     assert cryspy.hash.ufloathashlist == [1, 2, 3]
 
+    f = fs("1.2(1)")
+    h = cryspy.hash.ufloathash(f)
+    assert h == 4
+    assert cryspy.hash.ufloatlist == [a, f, b, e]
+    assert cryspy.hash.ufloathashlist == [1, 4, 2, 3]
+   
+    g = fs("1.3(1)")
+    h = cryspy.hash.ufloathash(g)
+    assert h == 5
+    assert cryspy.hash.ufloatlist == [a, f, g, b, e]
+    assert cryspy.hash.ufloathashlist == [1, 4, 5, 2, 3]
+
+    i = fs("1.3(1)")
+    h = cryspy.hash.ufloathash(i)
+    assert h == 6
+    assert cryspy.hash.ufloatlist == [a, f, g, i, b, e]
+    assert cryspy.hash.ufloathashlist == [1, 4, 5, 6, 2, 3]
+
+    j = fs("1.3(1)")
+    h = cryspy.hash.ufloathash(j)
+    assert h == 7
+    assert cryspy.hash.ufloatlist == [a, f, g, i, j, b, e]
+    assert cryspy.hash.ufloathashlist == [1, 4, 5, 6, 7, 2, 3]
+
+    k = i
+    h = cryspy.hash.ufloathash(k)
+    assert h == 6
+    assert cryspy.hash.ufloatlist ==     [a, f, g, i, j, b, e]
+    assert cryspy.hash.ufloathashlist == [1, 4, 5, 6, 7, 2, 3]
+
+    l = g
+    h = cryspy.hash.ufloathash(g)
+    assert h == 5
+    assert cryspy.hash.ufloatlist ==     [a, f, g, i, j, b, e]
+    assert cryspy.hash.ufloathashlist == [1, 4, 5, 6, 7, 2, 3]
+
+    m = j
+    h = cryspy.hash.ufloathash(m)
+    assert h == 7
+    assert cryspy.hash.ufloatlist ==     [a, f, g, i, j, b, e]
+    assert cryspy.hash.ufloathashlist == [1, 4, 5, 6, 7, 2, 3]
 
 
+def test_ufloathash_7():
+    cryspy.hash.ufloatlist = []
+    cryspy.hash.ufloathashlist = []
+    cryspy.hash.maxufloathash = -1
+
+    a = fs("1.2(1)")
+    h = cryspy.hash.ufloathash(a)
+    assert h == 1
+    assert cryspy.hash.ufloatlist == [a]
+    assert cryspy.hash.ufloathashlist == [1]
+
+    b = a
+    h = cryspy.hash.ufloathash(b)
+    assert h == 1
+    assert cryspy.hash.ufloatlist == [a]
+    assert cryspy.hash.ufloathashlist == [1]
+
+
+
+def test_ufloathash_8():
+    cryspy.hash.ufloatlist = []
+    cryspy.hash.ufloathashlist = []
+    cryspy.hash.maxufloathash = -1
+
+    a = fs("1.2(1)")
+    h = cryspy.hash.ufloathash(a)
+    assert h == 1
+    assert cryspy.hash.ufloatlist == [a]
+    assert cryspy.hash.ufloathashlist == [1]
+
+    b = fs("1.2(1)")
+    h = cryspy.hash.ufloathash(b)
+    assert h == 2
+    assert cryspy.hash.ufloatlist == [a, b]
+    assert cryspy.hash.ufloathashlist == [1, 2]
+ 

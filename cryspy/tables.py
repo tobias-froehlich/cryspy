@@ -5,10 +5,23 @@ import numpy as np
 
 
 def spacegroup(number):
+    if number == 2:
+        return geo.Spacegroup(geo.canonical,
+                              [fs("{x,y,z}"), fs("{-x,-y,-z}")])
+
     if number == 10:
         return geo.Spacegroup(geo.canonical,
                               [fs("{x,y,z}"), fs("{-x,y,-z}"), fs("{-x,-y,-z}"), fs("{x,-y,z}")])
 
+    if number == 11:
+        return geo.Spacegroup(geo.canonical,
+                              [fs("{x,y,z}"), fs("{-x,y+1/2,-z}"), fs("{-x,-y,-z}"), fs("{x,-y+1/2,z}")])
+
+
+    if number == 12:
+        return geo.Spacegroup(geo.canonical,
+                              [fs("{x,y,z}"), fs("{-x,-y,z}"), fs("{-x,-y,-z}"), fs("{x,y,-z}"),
+                               fs("{x,y+1/2,z+1/2}"), fs("{-x,-y+1/2,z+1/2}"), fs("{-x,-y+1/2,-z+1/2}"), fs("{x,y+1/2,-z+1/2}")])
 
     if number == 13:
         return geo.Spacegroup(geo.canonical,
@@ -125,6 +138,31 @@ def spacegroup(number):
                                fs("{y+1/4,x+3/4,-z+3/4}"), fs("{-y+1/4,-x+1/4,-z+1/4}"), fs("{ y+3/4,-x+3/4, z+1/4}"), fs("{-y+3/4, x+1/4, z+3/4}"),
                                fs("{x+1/4,z+3/4,-y+3/4}"), fs("{-x+3/4, z+1/4, y+3/4}"), fs("{-x+1/4,-z+1/4,-y+1/4}"), fs("{ x+3/4,-z+3/4, y+1/4}"),
                                fs("{z+1/4,y+3/4,-x+3/4}"), fs("{ z+3/4,-y+3/4, x+1/4}"), fs("{-z+3/4, y+1/4, x+3/4}"), fs("{-z+1/4,-y+1/4,-x+1/4}")])
+
+    if number == 225:
+        sg = geo.Spacegroup(geo.canonical,
+                            [fs("{x,y,z}"), fs("{-x,-y,z}"), fs("{-x,y,-z}"), fs("{x,-y,-z}"),
+                             fs("{z,x,y}"), fs("{z,-x,-y}"), fs("{-z,-x,y}"), fs("{-z,x,-y}"),
+                             fs("{y,z,x}"), fs("{-y,z,-x}"), fs("{y,-z,-x}"), fs("{-y,-z,x}"),
+                             fs("{y,x,-z}"), fs("{-y,-x,-z}"), fs("{y,-x,z}"), fs("{-y,x,z}"),
+                             fs("{x,z,-y}"), fs("{-x,z,y}"), fs("{-x,-z,-y}"), fs("{x,-z,y}"),
+                             fs("{z,y,-x}"), fs("{z,-y,x}"), fs("{-z,y,x}"), fs("{-z,-y,-x}")])
+        inversion = fs("{-x,-y,-z}")
+        sg = geo.Spacegroup(
+            geo.canonical,
+            sg.liste_cosets + [inversion * coset for coset in sg.liste_cosets]
+        )
+        t1 = fs("{x,y+1/2,z+1/2}")
+        t2 = fs("{x+1/2,y,z+1/2}")
+        t3 = fs("{x+1/2,y+1/2,z}")
+        sg = geo.Spacegroup(
+            geo.canonical,
+            sg.liste_cosets
+            + [t1 * coset for coset in sg.liste_cosets]
+            + [t2 * coset for coset in sg.liste_cosets]
+            + [t3 * coset for coset in sg.liste_cosets]
+        )
+        return sg
 
     if number == 227:
         sg = geo.Spacegroup(geo.canonical,

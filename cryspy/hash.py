@@ -75,6 +75,7 @@ def ufloathash_new(number):
     global ufloatlist
     global ufloathashlist
     global maxufloathash
+    number = nb.Mixed(number)
     n = len(ufloatlist)
     if n == 0:
         h = 1
@@ -103,8 +104,8 @@ def ufloathash_new(number):
                 i += 1
             h = maxufloathash + 1
             maxufloathash = h
-            ufloatlist[i+1:i+1] = [number]
-            ufloathashlist[i+1:i+1] = [h]
+            ufloatlist[i:i] = [number]
+            ufloathashlist[i:i] = [h]
             return h
         else:
 

@@ -877,7 +877,11 @@ class Spacegroup():
         self.liste_cosets = liste_cosets
 
     def is_really_a_spacegroup(self):
+        n = len(self.liste_cosets)
+        i = 0
         for coset1 in self.liste_cosets:
+            i += 1
+            print(i, " of ", n)
             for coset2 in self.liste_cosets:
                 coset3 = coset1 * coset2
                 if not (coset3 in self.liste_cosets):

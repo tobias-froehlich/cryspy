@@ -206,9 +206,41 @@ def fill(atomset, extraextensions):
                 extraextensions[2], extraextensions[2]],
            )
 
+def fill_hexagon(atomset, extraextensions):
+    # extraextensions: [radially, down, up]
+    #     for example: [0.05, 0.1, 0.5]
+    #                  goes 0.05 unit cells larger than the Hexagon,
+    #                  0.1 down in z-direction and 0.5 up.
+    assert isinstance(atomset, cryspy.crystal.Atomset), \
+        "First argument of cryspy.utils.fill_hexagon(...) must be of " \
+        "type cryspy.crystal.Atomset"
+    assert isinstance(extraextensions, list), \
+        "Second argument of cryspy.utils.fill_hexagon(...) must be of " \
+        "type list."
+    assert len(extraextensions) == 3, \
+        "Second argument of cryspy.utils.fill(...) must be a " \
+        "list of three numbers."
+    for item in extraextensions:
+        assert isinstance(item, cryspy.numbers.Mixed) \
+            or isinstance(item, float) or isinstance(item, int), \
+            "Scond argument of cryspy.utils.fill(...) must be a " \
+            "list of three numbers."
+    atomset = fill_plusminus_clever(atomset, [0, extraextensions[0],
+                                    0, extraextensions[0],
+                                    extraextensions[1], extraextensions[2]]
+    )
+    atomset =  atomset \
+            + ((atomset + fs("d -1  0 0")) + "_hex1") \
+            + ((atomset + fs("d -1 -1 0")) + "_hex2") \
+            + ((atomset + fs("d  0 -1 0")) + "_hex3")
+    newatomset = cryspy.crystal.Atomset(set([]))
+    for item in atomset.menge:
+        aux = float(item.pos.x() - item.pos.y())
+        if -1 - extraextensions[0] < aux < 1 + extraextensions[0]:
+            newatomset.add(item)
 
-
-
+    return newatomset
+    
 def octahedron(name, top, one, two, three, four, bottom, 
                facecolor, faceopacity, plotedges, edgecolor, edgewidth):
     # name: any string for a name, e.g. "MyFancyOctahedron"
