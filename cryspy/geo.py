@@ -96,7 +96,7 @@ class Pos:
         else:
             raise(BaseException(
                 "I cannot subtract objects of type %s and %s" %
-                (typen(self), type(right))))
+                (type(self), type(right))))
 
 origin = Pos(nb.Matrix([[0], [0], [0], [1]]))
 
