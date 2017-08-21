@@ -99,6 +99,7 @@ def draw_atomset_or_subset(structurename, atomset, t):
     momentumlist = []
     bondlist = []
     facelist = []
+    bitmapfacelist = []
     subsetlist = []
     for item in atomset.menge:
         if isinstance(item, crystal.Atom):
@@ -109,6 +110,8 @@ def draw_atomset_or_subset(structurename, atomset, t):
             bondlist.append(item)
         elif isinstance(item, crystal.Face):
             facelist.append(item)
+        elif isinstance(item, crystal.Bitmapface):
+            bitmapfacelist.append(item)
         elif isinstance(item, crystal.Subset):
             subsetlist.append(item)
 
@@ -242,6 +245,12 @@ def draw_atomset_or_subset(structurename, atomset, t):
         outstr += "mat.specular_color = (0, 0, 0)\n"
         outstr += "ob1.data.materials.append(mat)\n"
 
+    # Create Bitmapfaces:
+    bitmapfaceindex = 0
+    for bitmapface in bitmapfacelist:
+         bitmapfaceindex += 1
+         bitmapfacename = "Bitmapface%03i" % (bitmapfaceindex)
+         outstr += add_bitmapface(structurename, bitmapfacename, bitmapface, t)
 
 
     # Make all atoms looking smooth:
@@ -411,6 +420,7 @@ def add_cone(structurename, conename, x1, y1, z1, x2, y2, z2,
     outstr += "bpy.context.scene.objects.link(ob2)\n"
     return outstr
 
+
 def add_face(structurename, facename, verts):
     outstr = ""
     faces = range(len(verts))
@@ -432,13 +442,55 @@ def add_face(structurename, facename, verts):
     return outstr
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+def add_bitmapface(structurename, bitmapfacename, bitmapface, t):
+    outstr = ""
+    outstr += "mesh_data = bpy.data.meshes.new('%s.mesh%s')\n" \
+        %(structurename, bitmapfacename)
+    southwest = t ** bitmapface.southwest
+    southeast = t ** bitmapface.southeast
+    northwest = t ** bitmapface.northwest
+    northeast = t ** bitmapface.northeast
+    outstr += "mesh_data.from_pydata(" \
+        "[(%10.4f, %10.4f, %10.4f), " \
+        "(%10.4f, %10.4f, %10.4f), " \
+        "(%10.4f, %10.4f, %10.4f), " \
+        "(%10.4f, %10.4f, %10.4f)], " \
+        "[], [(0, 1, 2, 3)])\n" \
+        % (float(southwest.x()), float(southwest.y()), float(southwest.z()),
+           float(southeast.x()), float(southeast.y()), float(southeast.z()),
+           float(northeast.x()), float(northeast.y()), float(northeast.z()),
+           float(northwest.x()), float(northwest.y()), float(northwest.z()))
+    outstr += "mesh_data.update()\n"
+    outstr += "ob1 = bpy.data.objects.new('%s.%s', mesh_data)\n" \
+        %(structurename, bitmapfacename)
+    outstr += "bpy.context.scene.objects.link(ob1)\n"
+    width = bitmapface.bitmap.shape[0]
+    height = bitmapface.bitmap.shape[1]
+    outstr += "img = bpy.data.images.new('%s.mat%s', %i, %i)\n" \
+        %(structurename, bitmapfacename, width, height)
+    arraystring = "["
+    for x in range(width):
+        for y in range(height):
+            for channel in range(4):
+                arraystring += "%1.3f,"%(bitmapface.bitmap[x, y, channel])
+        arraystring += "\n"
+    arraystring += "]"
+    outstr += "img.pixels = %s\n"%(arraystring)
+    outstr += "tex = bpy.data.textures.new('%s.tex%s', 'IMAGE')\n" \
+        %(structurename, bitmapfacename)
+    outstr += "tex.image = img\n"
+    outstr += "bpy.context.scene.objects.active = ob1\n"
+    outstr += "bpy.ops.object.mode_set(mode='EDIT')\n"
+    outstr += "bpy.ops.uv.unwrap(method='ANGLE_BASED')\n"
+    outstr += "bpy.ops.object.mode_set(mode='OBJECT')\n"
+    outstr += "ob1.data.uv_layers[0].data[0].uv = (0.0, 0.0)\n"
+    outstr += "ob1.data.uv_layers[0].data[1].uv = (1.0, 0.0)\n"
+    outstr += "ob1.data.uv_layers[0].data[2].uv = (1.0, 1.0)\n"
+    outstr += "ob1.data.uv_layers[0].data[3].uv = (0.0, 1.0)\n"
+    outstr += "mat.texture_slots.add()\n"
+    outstr += "mat.texture_slots[0].texture = tex\n"
+    outstr += "ob1.data.materials.append(mat)\n"
+
+
+    return outstr
+

@@ -342,6 +342,66 @@ class Face(Drawable):
         return int(hashlib.sha1(string.encode()).hexdigest(), 16)
 
 
+class Bitmapface(Drawable):
+    def __init__(self, name, southwest, southeast, northwest, northeast, bitmap, format):
+        # Corners:
+        #            northwest                         northeast
+        #                       ----------------------
+        #                      |                      |
+        #                      | bitmap 1. index      |
+        #                      | ^                    |
+        #                      | |                    |
+        #                      |  -> bitmap 0. index  |
+        #                       ----------------------
+        #            southwest                         southeast
+        #
+        # Parameter format must be "RGBA", but in future more possibilities
+        # can be implemented.
+        #
+        # 3. index of bitmap depends on format. Eg. for format = "RGBA" the
+        # index counts through red, green, blue, opacity.
+
+        assert isinstance(name, str), \
+           "Error: First argument for creating cryspy.crystal.Bitmapface must " \
+           "be of type str ."
+
+        assert  isinstance(southwest, geo.Pos) \
+            and isinstance(southeast, geo.Pos) \
+            and isinstance(northwest, geo.Pos) \
+            and isinstance(northeast, geo.Pos), \
+            "Error: 2. to 5. arguments for creating cryspy.crystal.Bitmapface must be " \
+            "of type cryspy.geo.Pos ."
+        
+        assert isinstance(bitmap, np.ndarray), \
+            "Error: 6. argument for creating cryspy.crystal.Bitmapface must be " \
+            "of type numpy.array ."
+
+        assert len(bitmap.shape) == 3, \
+            "Error: 6. argument for creating cryspy.crystal.Bitmapface must be " \
+            "of type numpy.array with three indices ."
+
+        assert isinstance(format, str), \
+            "Error: 7. argument for creating cryspy.crystal.Bitmapface must be " \
+            "of type str ."
+
+        assert format in ["RGBA"], \
+            "Error: 7. argument for creating cryspy.crystal.Bitmapface must be " \
+            "the string 'RGBA' ."
+
+        if format == "RGBA":
+            assert bitmap.shape[2] == 4, \
+                 "Error creating an object of type cryspy.crystal.Bitmapface:\n" \
+                 "In the case format = 'RGBA', bitmap must be " \
+                 "of shape (*, *, 4) ."
+        self.name = name
+        self.southwest = southwest
+        self.southeast = southeast
+        self.northwest = northwest
+        self.northeast = northeast
+        self.bitmap = bitmap
+        self.format = format 
+
+
 class Atomset():
     def __init__(self, menge):
         assert isinstance(menge, set), \
@@ -349,7 +409,7 @@ class Atomset():
         for item in menge:
             assert isinstance(item, Atom) or isinstance(item, Momentum) \
                 or isinstance(item, Bond) or isinstance(item, Face) \
-                or isinstance(item, Subset), \
+                or isinstance(item, Subset) or isinstance(item, Bitmapface), \
                 "Argument must be a set of "\
                 "objects of type Atom, Momentum, Bond or Face."
         self.menge = menge

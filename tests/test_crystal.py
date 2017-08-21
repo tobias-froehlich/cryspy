@@ -187,6 +187,15 @@ def test_Face():
     assert len(atomset.menge) == 1
     
 
+def test_Bitmapface():
+    bitmap = np.array([[[0, 0, 0, 1], [0, 1, 0, 1]],
+                       [[1, 0, 0, 0.5], [0, 1, 0, 0]]])
+
+    bf = cr.Bitmapface("bf1", fs("p 0 0 0"), fs("p 1 0 0"),
+                       fs("p 0 1 0"), fs("p 0 0 0"),
+                       bitmap, "RGBA")
+    assert isinstance(bf, cr.Bitmapface)
+
 def test_Atomset():
     atom1 = cr.Atom("Cs1", "Cs", fs("p 0.0000 0 0"))
     atom1a = cr.Atom("Cs1", "Cs", fs("p 0.00000001 0 0"))
