@@ -481,3 +481,263 @@ def calculate_transformation_for_normalized_axes(metric):
                ])
            )
 
+
+def read_densitymap(infilename):
+    # In JANA2006 choose the following directions for the
+    # contour plot:
+    # Other choices are not possibile for this!
+    #    
+    #      1st 2nd 3rd
+    #  x   (*)
+    #  y   ( ) (*)
+    #  z   ( ) ( ) (*)
+    
+    
+    infile = open(infilename, "r")
+    iline = 0
+    ix = 0
+    iy = 0
+    iz = 0
+    for line in infile:
+        iline += 1
+        if iline == 1:
+            words = line.split()
+            assert len(words) == 3, \
+                "Error: *asc-file must have three integers in the first line!"
+            nx = int(words[0])
+            ny = int(words[1])
+            nz = int(words[2])
+            array = np.zeros([nx, ny, nz])
+        else:
+            words = line.split()
+            for word in words:
+                array[ix, iy, iz] = float(word) 
+                ix += 1
+                if ix >= nx:
+                    ix = 0
+                    iy += 1
+                if iy >= ny:
+                    iy = 0
+                    iz += 1
+    infile.close()
+    return array
+
+def get_value(array, ix, iy, iz):
+    (nx, ny, nz) = array.shape
+    return array[ix % nx, iy % ny, iz % nz]
+
+def interpolate(array, pos):
+    assert isinstance(pos, cryspy.geo.Pos), \
+        "Error: first argument of interpolate() must be of type " \
+        "cryspy.Pos"
+
+    def floor(f): # argument: float
+        return int(np.floor(f))
+
+    def ceil(f): # argument: float
+        c = int(np.ceil(f))
+        if f == c:
+            return c + 1
+        else:
+            return c
+
+    x = float(pos.x())
+    y = float(pos.y())
+    z = float(pos.z())
+    
+    (nx, ny, nz) = array.shape
+
+    ix = x * nx
+    iy = y * ny
+    iz = z * nz
+
+    fix = floor(ix)
+    fiy = floor(iy)
+    fiz = floor(iz)
+    cix = ceil(ix)
+    ciy = ceil(iy)
+    ciz = ceil(iz)
+
+    return get_value(array, fix, fiy, fiz) * (cix - ix) * (ciy - iy) * (ciz - iz)\
+         + get_value(array, fix, fiy, ciz) * (cix - ix) * (ciy - iy) * (iz - fiz)\
+         + get_value(array, fix, ciy, fiz) * (cix - ix) * (iy - fiy) * (ciz - iz)\
+         + get_value(array, fix, ciy, ciz) * (cix - ix) * (iy - fiy) * (iz - fiz)\
+         + get_value(array, cix, fiy, fiz) * (ix - fix) * (ciy - iy) * (ciz - iz)\
+         + get_value(array, cix, fiy, ciz) * (ix - fix) * (ciy - iy) * (iz - fiz)\
+         + get_value(array, cix, ciy, fiz) * (ix - fix) * (iy - fiy) * (ciz - iz)\
+         + get_value(array, cix, ciy, ciz) * (ix - fix) * (iy - fiy) * (iz - fiz)
+
+
+
+
+
+
+class Transformer():
+    # Coordinate systems:
+    # * alice:   3D-System of the crystal unit cell
+    # * bob:     2D-Subspace of 3D, spanned by the vectors xtip, ytip
+    # * charlie: Like bob, but with cartesian basis.
+
+    def __init__(self, origin, xtip, ytip, resolution):
+        # origin: Origin of system bob written in system alice
+        # xtip, ytip: tips of the axes of system bob written in alice
+        # resolution: number of pixels per column/row in the drawing.
+        self.resolution = resolution
+        assert  isinstance(origin, cryspy.geo.Pos) \
+            and isinstance(xtip, cryspy.geo.Pos) \
+            and isinstance(ytip, cryspy.geo.Pos), \
+            "The second, third and fourth parameters for creating an " \
+            "object of type Transformer must be of type cryspy.geo.Pos ."
+        if isinstance(resolution, cryspy.numbers.Mixed):
+            resolution = resolution.value
+        assert isinstance(resolution, int), \
+            "The last parameter for creating an object of type " \
+            "Transformer must be an integer number."       
+        self.metric = None
+        self.has_metric = False
+        self.origin = origin
+        self.xtip = xtip
+        self.ytip = ytip
+        self.resolution = resolution
+
+
+    def set_metric(self, metric): 
+        # metric: Metric of the crystal structure (alice)
+        assert isinstance(metric, cryspy.geo.Metric), \
+            "The first parameter for setting a metric for object of type " \
+            "Transformer must be of type cryspy.geo.Metric ."
+        self.metric = metric
+        self.has_metric = True
+        # Tips of the axes of system charlie written in system alice,
+        # calculated by Schmidt:
+        utip = origin + (xtip - origin) * (1 / metric.length(xtip - origin))
+        vtip = origin \
+             + (ytip - origin) \
+             - (utip - origin) * metric.dot(ytip - origin, utip - origin)
+        vtip = origin + (vtip - origin) * (1 / metric.length(vtip - origin))
+        self.utip = utip
+        self.vtip = vtip
+        # Write the bob-axes xtip and ytip in sytem charlie:
+        # (This is easy, because charlie is cartesian)
+        u_xtip = metric.dot(xtip - origin, utip - origin)
+        v_xtip = metric.dot(xtip - origin, vtip - origin)
+        u_ytip = metric.dot(ytip - origin, utip - origin)
+        v_ytip = metric.dot(ytip - origin, vtip - origin)
+        self.matrix_bob_to_charlie = cryspy.numbers.Matrix(
+            [[u_xtip, u_ytip],
+             [v_xtip, v_ytip]]
+        )
+        self.matrix_charlie_to_bob = self.matrix_bob_to_charlie.inv()
+
+    def bob_to_alice(self, x, y):
+        x = cryspy.numbers.Mixed(x)
+        y = cryspy.numbers.Mixed(y)
+        assert  isinstance(x, cryspy.numbers.Mixed) \
+            and isinstance(y, cryspy.numbers.Mixed), \
+            "The two parameters of bob_to_alice must be numbers."
+        return self.origin \
+            + (self.xtip - self.origin) * x \
+            + (self.ytip - self.origin) * y
+
+    def charlie_to_alice(self, u, v):
+        assert self.has_metric, \
+            "Error: For using the method " \
+            "cryspy.utils.Transformer.charlie_to_alice() , you must " \
+            "set a metric for the object of type Transformer ."
+        u = cryspy.numbers.Mixed(u)
+        v = cryspy.numbers.Mixed(v)
+        assert  isinstance(u, cryspy.numbers.Mixed) \
+            and isinstance(v, cryspy.numbers.Mixed), \
+            "The two last parameters of charlie_to_alice must be numbers."
+        return self.origin \
+            + (self.utip - self.origin) * u \
+            + (self.vtip - self.origin) * v
+
+    def bob_to_charlie(self, x, y):
+        assert self.has_metric, \
+            "Error: For using the method " \
+            "cryspy.utils.Transformer.bob_to_charlie() , you must " \
+            "set a metric for the object of type Transformer ."
+        vector = cryspy.numbers.Matrix([[x], [y]])
+        vector_new = self.matrix_bob_to_charlie * vector
+        return (vector_new.liste[0].liste[0], vector_new.liste[1].liste[0])
+
+    def charlie_to_bob(self, u, v):
+        assert self.has_metric, \
+        "Error: For using the method " \
+        "cryspy.utils.Transformer.charlie_to_bob() , you must " \
+        "set a metric for the object of type Transformer ."
+        vector = cryspy.numbers.Matrix([[u], [v]])
+        vector_new = self.matrix_charlie_to_bob * vector
+        return (vector_new.liste[0].liste[0], vector_new.liste[1].liste[0])
+
+    def calculate_boundingbox(self):
+        assert self.has_metric, \
+        "Error: For using the method " \
+        "cryspy.utils.Transformer.calculate_boundingbox() , you must " \
+        "set a metric for the object of type Transformer ."
+        southwest = self.bob_to_charlie(0, 0)
+        southeast = self.bob_to_charlie(1, 0)
+        northwest = self.bob_to_charlie(0, 1)
+        northeast = self.bob_to_charlie(1, 1)
+        corners = [southwest, southeast, northwest, northeast]
+        us = [float(corner[0]) for corner in corners]
+        vs = [float(corner[1]) for corner in corners]
+        return [min(us), max(us), min(vs), max(vs)]
+
+def slice(array, origin, xtip, ytip, resolution):
+    # array: density-map array as returned by 
+    #        cryspy.utils.read_densitymap()
+    # origin, xtip, ytip: Three corners of the slice (type cryspy.geo.Pos):
+    #         
+    #             ytip
+    #              *------------------
+    #              |                  |
+    #              |                  |
+    #              |                  |
+    #              |                  |
+    #              *------------------* xtip
+    #       origin
+    #
+    # resolution: integer (number of pixels in the slice in each direction)
+    transformer = Transformer(origin, xtip, ytip, resolution)
+    result = np.zeros([resolution, resolution])
+    for u in range(resolution):
+        for v in range(resolution):
+            pos = transformer.bob_to_alice(u/resolution, v/resolution)
+            result[u, v] = interpolate(array, pos)
+    return result
+
+
+def slice_to_bitmap(slice, type, colorrange, format):
+    # slice: numpy.array like returned by cryspy.utils.slice() .
+    # type: "bwr": blue-white-red map for negative and positive values
+    # type: "btr": blue-transparent-red map
+    # colorrange: [lowest value for mapping, highest value for mapping]
+    # format: "RGBA": compare to cryspy.crystal.Bitmapface 
+    
+    (width, height) = slice.shape
+    middle = (colorrange[1] + colorrange[0])/2
+    halfrange = colorrange[1] - middle
+    if (type == "bwr") and (format == "RGBA"):
+        bitmap = np.zeros([width, height, 4])
+        for j in range(height):
+            for i in range(width):
+                value = slice[i, j]
+                white = 1 - np.abs(value - middle)/halfrange
+                if value >= 0:
+                    bitmap[i, j, :] = [1, white, white, 1]
+                else:
+                    bitmap[i, j, :] = [white, white, 1, 1]
+    elif (type == "btr") and (format == "RGBA"):
+        bitmap = np.zeros([width, height, 4])
+        for j in range(height):
+            for i in range(width):
+                value = slice[i, j]
+                opacity = np.abs(value - middle)/halfrange
+                if value >= 0:
+                    bitmap[i, j, :] = [1, 0, 0, opacity]
+                else:
+                    bitmap[i, j, :] = [0, 0, 1, opacity]
+
+    return bitmap

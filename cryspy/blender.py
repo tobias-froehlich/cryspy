@@ -34,6 +34,10 @@ def make_blender_script(atomset, metric, structurename, outfilename):
     outstr += "    if mat.name.startswith('%s'):\n" % (structurename)
     outstr += "        bpy.data.materials.remove(mat)\n"
 
+    outstr += "for tex in bpy.data.textures:\n"
+    outstr += "    if tex.name.startswith('%s'):\n" % (structurename)
+    outstr += "        bpy.data.textures.remove(tex)\n"
+
     # Delete all existing lamps:
     outstr += "bpy.ops.object.select_all(action='DESELECT')\n"
     outstr += "for object in bpy.data.objects:\n"
@@ -484,11 +488,17 @@ def add_bitmapface(structurename, bitmapfacename, bitmapface, t):
     outstr += "bpy.ops.uv.unwrap(method='ANGLE_BASED')\n"
     outstr += "bpy.ops.object.mode_set(mode='OBJECT')\n"
     outstr += "ob1.data.uv_layers[0].data[0].uv = (0.0, 0.0)\n"
-    outstr += "ob1.data.uv_layers[0].data[1].uv = (1.0, 0.0)\n"
+    outstr += "ob1.data.uv_layers[0].data[1].uv = (0.0, 1.0)\n"
     outstr += "ob1.data.uv_layers[0].data[2].uv = (1.0, 1.0)\n"
-    outstr += "ob1.data.uv_layers[0].data[3].uv = (0.0, 1.0)\n"
+    outstr += "ob1.data.uv_layers[0].data[3].uv = (1.0, 0.0)\n"
+    outstr += "mat = bpy.data.materials.new('%s.mat%s')\n" \
+        %(structurename, bitmapfacename)
     outstr += "mat.texture_slots.add()\n"
     outstr += "mat.texture_slots[0].texture = tex\n"
+    outstr += "mat.texture_slots[0].use_map_alpha = True\n"
+    outstr += "mat.texture_slots[0].alpha_factor = 1.0\n"
+    outstr += "mat.use_transparency = True\n"
+    outstr += "mat.alpha = 0.0\n"
     outstr += "ob1.data.materials.append(mat)\n"
 
 

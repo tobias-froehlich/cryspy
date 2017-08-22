@@ -8,6 +8,9 @@ bitmap += 1
 bitmap[0, 0, 2] = 0
 bitmap[9, 0, 1] = 0
 bitmap[0, 9, 0] = 0
+bitmap[9, 9, 0] = 0
+bitmap[9, 9, 1] = 0
+bitmap[9, 9, 2] = 0
 
 bitmapface = cryspy.crystal.Bitmapface(
     "BF1",
