@@ -125,7 +125,7 @@ def draw_atomset_or_subset(structurename, atomset, t):
             typs.append(atom.typ)
 
     for typ in typs:
-        (spheresize, color) = tables.colorscheme_jmol(typ)
+        (spheresize, color) = tables.colorscheme(typ)
         outstr += "bpy.ops.mesh.primitive_ico_sphere_add(location=(0,0,0), size=%f, subdivisions=%i)\n" \
             % (spheresize, const.blender__atom_icosphere_subdivisions)
         outstr += "ob = bpy.context.object\n"
