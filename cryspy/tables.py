@@ -21,7 +21,7 @@ def spacegroup(number):
     if number == 12:
         return geo.Spacegroup(geo.canonical,
                               [fs("{x,y,z}"), fs("{-x,-y,z}"), fs("{-x,-y,-z}"), fs("{x,y,-z}"),
-                               fs("{x,y+1/2,z+1/2}"), fs("{-x,-y+1/2,z+1/2}"), fs("{-x,-y+1/2,-z+1/2}"), fs("{x,y+1/2,-z+1/2}")])
+                               fs("{x+1/2,y+1/2,z}"), fs("{-x+1/2,-y+1/2,z}"), fs("{-x+1/2,-y+1/2,-z}"), fs("{x+1/2,y+1/2,-z}")])
 
     if number == 13:
         return geo.Spacegroup(geo.canonical,
