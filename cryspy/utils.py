@@ -284,14 +284,14 @@ def octahedron(name, top, one, two, three, four, bottom,
         "The edgewidth of the octahedron must be of type " \
         "float or int."
 
-    face1 = cryspy.crystal.Face("Face1", [one, two, top])
-    face2 = cryspy.crystal.Face("Face2", [two, three, top])
-    face3 = cryspy.crystal.Face("Face3", [three, four, top])
-    face4 = cryspy.crystal.Face("Face4", [four, one, top])
-    face5 = cryspy.crystal.Face("Face5", [one, two, bottom])
-    face6 = cryspy.crystal.Face("Face6", [two, three, bottom])
-    face7 = cryspy.crystal.Face("Face7", [three, four, bottom])
-    face8 = cryspy.crystal.Face("Face8", [four, one, bottom])
+    face1 = cryspy.crystal.Face("Face1", [top, one, two])
+    face2 = cryspy.crystal.Face("Face2", [top, two, three])
+    face3 = cryspy.crystal.Face("Face3", [top, three, four])
+    face4 = cryspy.crystal.Face("Face4", [top, four, one])
+    face5 = cryspy.crystal.Face("Face5", [bottom, two, one])
+    face6 = cryspy.crystal.Face("Face6", [bottom, three, two])
+    face7 = cryspy.crystal.Face("Face7", [bottom, four, three])
+    face8 = cryspy.crystal.Face("Face8", [bottom, one, four])
 
     faces = {face1, face2, face3, face4, face5, face6, face7, face8}
     for face in faces:
