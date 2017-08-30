@@ -28,7 +28,8 @@ class Goniometer:
         self.motiontype = motiontype
         self.axis = axis
         self.direction = direction
-        self.parametername = parametername
+        self.parameternames = [parametername]
+
 
     def operator(self, parameters):
         assert isinstance(parameters, dict), \
@@ -36,15 +37,14 @@ class Goniometer:
             "dictionary"
  
         if not self.composed:
-            assert len(parameters) == 1, \
-                "A Goniometer which is not composed can have only one " \
-                "parameter."
-
-            parametername = list(parameters.keys())[0]
-            parameter = parameters[parametername]
-            assert parametername == self.parametername, \
-                "The Goniometer has no parameter called '%s'." \
-                %(list(parameters.keys())[0])
+#            assert len(parameters) == 1, \
+#                "A Goniometer which is not composed can have only one " \
+#                "parameter."
+#            parametername = list(parameters.keys())[0]
+            assert self.parameternames[0] in parameters.keys(), \
+                "You must specify the parameter called '%s'."\
+                %(self.parameternames[0])
+            parameter = parameters[self.parameternames[0]]                
             if self.motiontype == "translation":
                 if self.direction == "negative":
                     parameter = -parameter
@@ -78,7 +78,85 @@ class Goniometer:
                             ]
                         )
                     )
+            elif self.motiontype == "rotation":
+                if self.direction == "clockwise":
+                    parameter = -parameter
+                cos = cryspy.numbers.dcos(parameter)
+                sin = cryspy.numbers.dsin(parameter)
+                if self.axis == "x":
+                     return cryspy.geo.Operator(
+                         cryspy.numbers.Matrix(
+                             [[1,   0,    0, 0],
+                              [0, cos, -sin, 0],
+                              [0, sin,  cos, 0],
+                              [0,   0,    0, 1]
+                             ]
+                         )
+                     )
+                if self.axis == "y":
+                     return cryspy.geo.Operator(
+                         cryspy.numbers.Matrix(
+                             [[ cos,   0,  sin, 0],
+                              [   0,   1,    0, 0],
+                              [-sin,   0,  cos, 0],
+                              [   0,   0,    0, 1]
+                             ]
+                         )
+                     )
+                if self.axis == "z":
+                     return cryspy.geo.Operator(
+                         cryspy.numbers.Matrix(
+                             [[cos, -sin, 0, 0],
+                              [sin,  cos, 0, 0],
+                              [  0,    0, 1, 0],
+                              [  0,    0, 0, 1]
+                             ]
+                         )
+                     )
         else:
-            pass
+            return cryspy.geo.Operator(
+                self.lower_gonio.operator(parameters).value
+              * self.upper_gonio.operator(parameters).value
+            )
            
-       
+
+    def __str__(self):
+        if not self.composed:
+            if self.motiontype == "translation":
+                return    " /    translate by   \\ \n" \
+                          "| %16s    |\n" \
+                          "|        along        |\n" \
+                          "|        %s-axis       |\n" \
+                          " \\     %8s      / "\
+                          %(self.parameternames[0], self.axis, self.direction)
+            elif self.motiontype == "rotation":
+                return    " /     rotate by    \\ \n" \
+                          "| %16s   |\n" \
+                          "|        around      |\n" \
+                          "|        %s-axis      |\n" \
+                          " \\ %16s / "\
+                          %(self.parameternames[0], self.axis, self.direction)
+        else:
+            return cryspy.blockprint.block([[str(self.lower_gonio), " \n \n*\n \n", str(self.upper_gonio)]])
+
+
+
+    def __mul__(self, right):
+        if isinstance(right, Goniometer):
+            for parametername in right.parameternames:
+                 assert parametername not in self.parameternames, \
+                     "Cannot multiply two Goniometers which have " \
+                     "both the parameter '%s'."%(parametername)
+                    
+            result = Goniometer("translation", "x", "positive", "dummy")
+            result.composed = True
+            result.motiontype = None
+            result.axis = None
+            result.direction = None
+            result.parameternames = self.parameternames + right.parameternames
+            result.lower_gonio = self
+            result.upper_gonio = right
+            return result
+        else:
+            return NotImplemented
+            
