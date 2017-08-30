@@ -113,6 +113,11 @@ def test_Operator():
                           "         \   0   0  0  1  / "
     assert g == g1
 
+    g = geo.Operator(fs("-1 0 0 0 \n 0 1 0 0 \n 0 0 1 1/2 \n 0 0 0 1"))
+    assert g ** fs("p 1/2 1/2 1/2") == fs("p -1/2 1/2 1")
+    assert g ** fs("d 1/2 1/2 1/2") == fs("d -1/2 1/2 1/2")
+    assert g ** fs("q 1/2 1/2 1/2") == fs("q -1/2 1/2 1/2")
+
 
 def test_Symmetry():
     g = geo.Symmetry(nb.Matrix([[1,  0, 2, -1],

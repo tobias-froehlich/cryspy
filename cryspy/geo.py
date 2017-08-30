@@ -289,6 +289,16 @@ class Operator:
     def inv(self):
         return Operator(self.value.inv())
 
+    def __pow__(self, right):
+        if isinstance(right, Pos):
+            return Pos(self.value * right.value)
+        elif isinstance(right, Dif):
+            return Dif(self.value * right.value)
+        elif isinstance(right, Rec):
+            return Rec(right.value * self.value.delete_translation())
+        else:
+            return NotImplemented
+
 
 def linearterm2str(liste_numbers, liste_variables):
     assert isinstance(liste_numbers, list), \
