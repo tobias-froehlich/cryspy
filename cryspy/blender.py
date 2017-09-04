@@ -495,6 +495,7 @@ def add_bitmapface(structurename, bitmapfacename, bitmapface, t):
         %(structurename, bitmapfacename)
     outstr += "mat.texture_slots.add()\n"
     outstr += "mat.texture_slots[0].texture = tex\n"
+    outstr += "mat.texture_slots[0].texture_coords = 'UV'\n"
     outstr += "mat.texture_slots[0].use_map_alpha = True\n"
     outstr += "mat.texture_slots[0].alpha_factor = 1.0\n"
     outstr += "mat.use_transparency = True\n"
