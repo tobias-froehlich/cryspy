@@ -13,13 +13,19 @@ def test_cryspy_tables():
 #    assert sg.is_really_a_spacegroup() == True
 #    sg = tb.spacegroup(11)
 #    assert sg.is_really_a_spacegroup() == True 
-    sg = tb.spacegroup(12)
-    assert sg.is_really_a_spacegroup() == True
+#    sg = tb.spacegroup(12)
+#    assert sg.is_really_a_spacegroup() == True
+#    sg = tb.spacegroup(13)
+#    assert sg.is_really_a_spacegroup() == True
+#    sg = tb.spacegroup(14)
+#    assert sg.is_really_a_spacegroup() == True
 #    sg = tb.spacegroup(15)
 #    assert sg.is_really_a_spacegroup() == True
 #    sg = tb.spacegroup(33)
 #    assert sg.is_really_a_spacegroup() == True
 #    sg = tb.spacegroup(46)
+#    assert sg.is_really_a_spacegroup() == True
+#    sg = tb.spacegroup(59)
 #    assert sg.is_really_a_spacegroup() == True
 #    sg = tb.spacegroup(62)
 #    assert sg.is_really_a_spacegroup() == True
