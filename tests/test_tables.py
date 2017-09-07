@@ -7,7 +7,15 @@ from cryspy import tables as tb
 
 
 def test_cryspy_tables():
-    sg = tb.spacegroup(2)
+    sg = tb.spacegroup(1)
+    assert sg.is_really_a_spacegroup() == True
+#    sg = tb.spacegroup(2)
+#    assert sg.is_really_a_spacegroup() == True
+#    sg = tb.spacegroup(4)
+#    assert sg.is_really_a_spacegroup() == True
+#    sg = tb.spacegroup(7)
+#    assert sg.is_really_a_spacegroup() == True
+#    sg = tb.spacegroup(9)
 #    assert sg.is_really_a_spacegroup() == True
 #    sg = tb.spacegroup(10)
 #    assert sg.is_really_a_spacegroup() == True

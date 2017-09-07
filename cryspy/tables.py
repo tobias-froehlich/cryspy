@@ -5,9 +5,24 @@ import numpy as np
 
 
 def spacegroup(number):
+    if number == 1:
+        return geo.Spacegroup(geo.canonical, [fs("{x,y,z}")])
+
     if number == 2:
         return geo.Spacegroup(geo.canonical,
                               [fs("{x,y,z}"), fs("{-x,-y,-z}")])
+
+    if number == 4:
+        return geo.Spacegroup(geo.canonical,
+                              [fs("{x,y,z}"), fs("{-x,y+1/2,-z}")])
+
+    if number == 7:
+        return geo.Spacegroup(geo.canonical,
+                              [fs("{x,y,z}"), fs("{x,-y,z+1/2}")])
+
+    if number == 9:
+        return geo.Spacegroup(geo.canonical,
+                              [fs("{x,y,z}"), fs("{x,-y,z+1/2}")])
 
     if number == 10:
         return geo.Spacegroup(geo.canonical,
