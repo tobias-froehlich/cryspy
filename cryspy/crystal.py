@@ -294,6 +294,20 @@ class Face(Drawable):
         self.has_opacity = True
         self.opacity = opacity 
 
+    def flip(self):
+    # Flips the orientation, i.e. reverses the order of the corners.
+        liste = []
+        for corner in self.corners:
+            liste.append(corner)
+        n = len(liste)
+        liste = [liste[n-i-1] for i in range(n)]
+        result = Face(self.name, liste)
+        if self.has_color:
+            result.set_color(self.color)
+        if result.has_opacity:
+            result.set_opacity(self.opacity)
+        return result
+
     def __str__(self):
         return "Face"
 
@@ -319,11 +333,20 @@ class Face(Drawable):
     def __rpow__(self, left):
         if isinstance(left, geo.Operator) \
             or isinstance(left, geo.Coset):
+            must_flip = False
+            if isinstance(left, geo.Operator):
+                if float(left.value.det()) < 0:
+                    must_flip = True
+            elif isinstance(left, geo.Coset):
+                if float(left.symmetry.value.det()) < 0:
+                    must_flip = True
             result = Face(self.name, [left ** corner for corner in self.corners])
             if self.has_color:
                 result.set_color(self.color)
             if self.has_opacity:
                 result.set_opacity(self.opacity)
+            if must_flip:
+                result = result.flip()
             return result
         else:
             return NotImplemented
@@ -333,9 +356,9 @@ class Face(Drawable):
         sum_of_products = 0
         for i in range(len(self.corners) - 1):
             summe += hash(self.corners[i])
-            sum_of_products += hash(self.corners[i]) * hash(self.corners[i+1])
+            sum_of_products += hash(self.corners[i]) * hash(self.corners[i+1])**2
         summe += hash(self.corners[-1])
-        sum_of_products += hash(self.corners[-1]) * hash(self.corners[0])
+        sum_of_products += hash(self.corners[-1]) * hash(self.corners[0])**2
 
         string = "face%i,%i" % \
                  (summe, sum_of_products)

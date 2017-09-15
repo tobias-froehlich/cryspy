@@ -142,8 +142,8 @@ def test_Face():
     f__ = cr.Face("F", [fs("p 0 1.0 0"), fs("p 1.0 0 0"), fs("p 0 0 0")])
     assert f == f_
     assert hash(f) == hash(f_)
-    assert f == f__
-    assert hash(f) == hash(f__)
+    assert (f == f__) == False
+    assert (hash(f) == hash(f__)) == False
     f = cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")])
     f_ = cr.Face("F", [fs("p 0 1 0"), fs("p 0 0 0"), fs("p 1 0 0")])
     assert isinstance(f, cr.Face)
@@ -154,11 +154,14 @@ def test_Face():
     f1 = cr.Face("Fblabla", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")])
     f2 = cr.Face("F", [fs("p 0 0 0"), fs("p 0.7 0 0"), fs("p 0 1 0")])
     f3 = cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 2 0")])
+    f4 = cr.Face("F", [fs("p 0 2 0"), fs("p 1 0 0"), fs("p 0 0 0")])
     assert f == f1
     assert f == f_
     assert hash(f) == hash(f_)
     assert (f == f2) == False
     assert (f == f3) == False
+    assert (f3 == f4) == False
+    assert f3.flip() == f4
     assert f + d == cr.Face("F", [fs("p 0 0 1/2"), fs("p 1 0 1/2"), fs("p 0 1 1/2")])
     assert fs("x+1/2,y,z") ** f == cr.Face("F", [fs("p 1/2 0 0"), fs("p 3/2 0 0"), fs("p 1/2 1 0")])
     assert fs("{x+3/2,y,z}") ** f == cr.Face("F", [fs("p 1/2 0 0"), fs("p 1/2 0 0"), fs("p 1/2 0 0")])
@@ -185,6 +188,10 @@ def test_Face():
     assert len(atomset.menge) == 1
     atomset = sg ** atomset
     assert len(atomset.menge) == 1
+    f = cr.Face("F", [fs("p -1 0 0"), fs("p 0 1 0"), fs("p 1 0 0")])
+    assert fs("-x, y, -z") ** f == f.flip()
+    assert fs("-x,y,z") ** f == f
+
     
 
 def test_Bitmapface():
