@@ -108,10 +108,46 @@ def test_autotetraeder():
         "Tetra",
         atomset.get_atom("H1").pos,
         atomset.get_atom("H2").pos,
-        atomset.get_atom("H3").pos,
         atomset.get_atom("H4").pos,
+        atomset.get_atom("H3").pos,
         facecolor, faceopacity, plotedges, edgecolor, edgewidth
     )
     assert tetra1 == tetra2
 
+def test_auto_octahedron():
+    metric = cryspy.geo.Cellparameters(1, 1, 1, 90, 90, 90).to_Metric()
+    Atom = cryspy.crystal.Atom
+    facecolor = (1, 1, 1)
+    faceopacity = 0.5
+    plotedges = True
+    edgecolor = (0, 0, 0)
+    edgewidth = 0.02
+    atomset = cryspy.crystal.Atomset({
+        Atom("Fe1", "Fe", fs("p 1/2 1/2 1/2")),
+        Atom("H1", "H", fs("p 1/2 1/2 0")),
+        Atom("H2", "H", fs("p 1/2 1/2 1")),
+        Atom("H3", "H", fs("p 1/2 0 1/2")),
+        Atom("H4", "H", fs("p 1/2 1 1/2")),
+        Atom("H5", "H", fs("p 0 1/2 1/2")),
+        Atom("H6", "H", fs("p 1 1/2 1/2"))
+    })
+    octa1 = cryspy.utils.auto_octahedron(
+        "Octa",
+        atomset,
+        metric,
+        atomset.get_atom("Fe1").pos,
+        ["H"],
+        facecolor, faceopacity, plotedges, edgecolor, edgewidth
+    )
+    octa2 = cryspy.utils.octahedron(
+        "Octa",
+        atomset.get_atom("H1").pos,
+        atomset.get_atom("H3").pos,
+        atomset.get_atom("H5").pos,
+        atomset.get_atom("H4").pos,
+        atomset.get_atom("H6").pos,
+        atomset.get_atom("H2").pos,
+        facecolor, faceopacity, plotedges, edgecolor, edgewidth
+    )
+    assert octa1 == octa2
 

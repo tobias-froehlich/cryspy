@@ -333,6 +333,106 @@ def octahedron(name, top, one, two, three, four, bottom,
     )
     return subset
 
+def auto_octahedron(name, atomset, metric, centre, typelist, 
+               facecolor, faceopacity, plotedges, edgecolor, edgewidth):
+    assert isinstance(name, str), \
+        "The name of the octahedron must be of type str."
+    assert isinstance(atomset, cryspy.crystal.Atomset), \
+        "The second entry of cryspy.utils.auto_octahedron() must be " \
+        "of type cryspy.crystal.Atomset."
+    assert isinstance(metric, cryspy.geo.Metric), \
+        "The third entry of cryspy.utils.auto_octahedron() must be " \
+        "of type cryspy.geo.Metric"
+    assert isinstance(centre, cryspy.geo.Pos), \
+        "The centre of the auto_octahedron must be of type " \
+        "cryspy.geo.Pos ."
+    for typ in typelist:
+        assert isinstance(typ, str), \
+            "The corners of the octahedron must be of type str."
+    for color in [facecolor, edgecolor]:
+        assert isinstance(color, list) or isinstance(color, tuple), \
+            "The face- and edgecolor of the octahedron must be " \
+            "lists or tuples."
+        for item in color:
+            assert isinstance(item, float) \
+                or isinstance(item, int) \
+                or isinstance(item, cryspy.numbers.Mixed), \
+                "The face- and edgecolor of the octahedron must be " \
+                "lists or tuples of type float, int or " \
+                "cryspy.numbers.Mixed ."
+    assert isinstance(faceopacity, float) \
+        or isinstance(faceopacity, int), \
+        "The faceopacity of the octahedron must be of type " \
+        "float or int."
+    assert isinstance(plotedges, bool), \
+        "The parameter plotedges of the octahedron (says whether " \
+        "to plot the edges as cylinders or not) must be of " \
+        "of type bool (True or False). "
+    assert isinstance(edgewidth, float) \
+        or isinstance(edgewidth, int), \
+        "The edgewidth of the octahedron must be of type " \
+        "float or int."
+
+    atomlist = []
+    for atom in atomset.menge:
+        if atom.typ in typelist:
+            atomlist.append(atom)
+
+    distancelist = []
+    for atom in atomlist:
+        distancelist.append(float(metric.length(centre - atom.pos)))
+
+    atomlist = [i for (j, i) in sorted(zip(distancelist, atomlist), key=lambda pair: pair[0])]
+    topatom = atomlist[0]
+    atomlist = atomlist[1:6]
+    distancelist = []
+    for atom in atomlist:
+        distancelist.append(float(metric.length(topatom.pos - atom.pos)))
+    atomlist = [i for (j, i) in sorted(zip(distancelist, atomlist), key=lambda pair: pair[0])]
+
+    atomlist2 = atomlist[0:3]
+    distancelist2 = []
+    for i in [0, 1, 2]:
+        distancelist2.append(
+            float(metric.length(atomlist2[i].pos - atomlist2[(i+1) % 3].pos))
+          + float(metric.length(atomlist2[i].pos - atomlist2[(i+2) % 3].pos))
+        )
+    print(atomlist2)
+    atomlist2 = [i for (j, i) in sorted(zip(distancelist2, atomlist2), key=lambda pair: pair[0])]
+    print(atomlist2)
+    A = atomlist2[1]
+    B = atomlist2[0]
+    C = atomlist2[2]
+
+    edge0 = A.pos - topatom.pos
+    edge1 = B.pos - topatom.pos
+    edge2 = C.pos - topatom.pos
+    det = edge0.value.hglue(edge1.value).hglue(edge2.value).hglue(
+        cryspy.numbers.Matrix([[0], [0], [0], [1]])
+    ).det()
+
+    if float(det) < 0:
+        oneatom = A
+        twoatom = B
+        threeatom = C
+        fouratom = atomlist[3]
+        bottomatom = atomlist[4]
+    else:
+        oneatom = atomlist[3]
+        twoatom = C
+        threeatom = B
+        fouratom = A
+        bottomatom = atomlist[4]
+    
+    return octahedron(
+        name,
+        topatom.pos, oneatom.pos,
+        twoatom.pos, threeatom.pos,
+        fouratom.pos, bottomatom.pos,
+        facecolor, faceopacity,
+        plotedges, edgecolor, edgewidth
+    )
+
 
 def tetrahedron(name, one, two, three, four, 
                facecolor, faceopacity, plotedges, edgecolor, edgewidth):
