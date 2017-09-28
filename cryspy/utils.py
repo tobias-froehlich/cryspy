@@ -14,17 +14,17 @@ def calculate_twotheta(metric, wavelength, q):
         "cryspy.numbers.Mixed or int or float."
     assert isinstance(q, cryspy.geo.Rec), \
         "Third argument of calculate_twotheta(...) must be of type cryspy.geo.Rec!"
-
-
     # Lattice plane distance  =  1/(length of reciprocal vector)
     # can be found here:
     # Carmelo Giacovazzo et al.: Fundamentals of Crystallography
     # Oxford University Press (1992)
-
     d = float(1 / metric.length(q))
     theta = np.arcsin(float(wavelength)/2/d)
     twotheta = 2 * theta
     return twotheta
+
+def calculate_dtwotheta(metric, wavelength, q):
+    return cryspy.numbers.rad2deg(calculate_twotheta(metric, wavelength, q))
 
 class Karussell:
     def __init__(self, metric, zerodirection, positivedirection):
@@ -997,3 +997,29 @@ def slice_to_bitmap(slice, type, colorrange, format):
                     bitmap[i, j, :] = [0, 0, 1, opacity]
 
     return bitmap
+
+def axes_box(thickness, color):
+    bonds = [
+        cryspy.crystal.Bond("a1", fs("p 0 0 0"), fs("p 1 0 0")),
+        cryspy.crystal.Bond("a2", fs("p 0 0 1"), fs("p 1 0 1")),
+        cryspy.crystal.Bond("a3", fs("p 0 1 1"), fs("p 1 1 1")),
+        cryspy.crystal.Bond("a4", fs("p 0 1 0"), fs("p 1 1 0")),
+        cryspy.crystal.Bond("b1", fs("p 0 0 0"), fs("p 0 1 0")),
+        cryspy.crystal.Bond("b2", fs("p 1 0 0"), fs("p 1 1 0")),
+        cryspy.crystal.Bond("b3", fs("p 1 0 1"), fs("p 1 1 1")),
+        cryspy.crystal.Bond("b4", fs("p 0 0 1"), fs("p 0 1 1")),
+        cryspy.crystal.Bond("c1", fs("p 0 0 0"), fs("p 0 0 1")),
+        cryspy.crystal.Bond("c2", fs("p 0 1 0"), fs("p 0 1 1")),
+        cryspy.crystal.Bond("c3", fs("p 1 1 0"), fs("p 1 1 1")),
+        cryspy.crystal.Bond("c4", fs("p 1 0 0"), fs("p 1 0 1")),
+    ]
+    for bond in bonds:
+        bond.set_color(color)
+        bond.set_thickness(thickness)
+    
+    return cryspy.crystal.Subset(
+        "Axes_Box",
+        fs("p 0 0 0"), 
+        {bond for bond in bonds}
+    )
+

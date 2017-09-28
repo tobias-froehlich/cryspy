@@ -304,7 +304,7 @@ class Face(Drawable):
         result = Face(self.name, liste)
         if self.has_color:
             result.set_color(self.color)
-        if result.has_opacity:
+        if self.has_opacity:
             result.set_opacity(self.opacity)
         return result
 

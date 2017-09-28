@@ -124,10 +124,6 @@ def test_Bond():
     b1.set_thickness(0.5)
     b2 = cr.Bond("B", fs("p -0.1 0 0"), fs("p 0.09 0 0"))
     b  = cr.Bond("B", fs("p  0.9 0 0"), fs("p 1.09 0 0"))
-    print((b1 % geo.canonical).start)
-    print((b1 % geo.canonical).target)
-    print(b.start)
-    print(b.target)
     assert b1 % geo.canonical == b
     assert b2 % geo.canonical == b
     assert (b1 % geo.canonical).color == b1.color
@@ -181,7 +177,6 @@ def test_Face():
     a3 = cr.Atom("Fe3", "Fe", p3)
     atomset = cr.Atomset({a1, a2, a3})
     atomset = sg**atomset
-    print(atomset)
     assert len(atomset.menge) == 3
     f = cr.Face("F", [p1, p2, p3])
     atomset = cr.Atomset({f})
@@ -189,8 +184,12 @@ def test_Face():
     atomset = sg ** atomset
     assert len(atomset.menge) == 1
     f = cr.Face("F", [fs("p -1 0 0"), fs("p 0 1 0"), fs("p 1 0 0")])
+    f.set_opacity(0.5)
+    f.set_color((1, 0, 0))
     assert fs("-x, y, -z") ** f == f.flip()
     assert fs("-x,y,z") ** f == f
+    assert f.flip().opacity == f.opacity
+    assert f.flip().color == f.color
 
     
 
@@ -234,7 +233,6 @@ def test_Atomset():
                         "b' = b   \n"
                         "c' = c")
     atomset1 = transformation**atomset
-    print(atomset1)
     atomset2 = cr.Atomset({cr.Atom("Cs1", "Cs", fs("p 0.00000001 -0.00000001 -1/4")), \
                            cr.Atom("Cs2", "Cs", fs("p 1/4 0 -1/4")), \
                            cr.Momentum("M", fs("p 0 0 -1/4"), fs("d 0 0 1")), \
@@ -338,8 +336,6 @@ def test_Atomset():
         cr.Atom("S_2.Fe1", "Fe", fs("p -0.1 1/2 0")),
         cr.Atom("S_2.Fe2", "Fe", fs("p  0.1 1/2 0"))
     })
-    for subset in (sg ** atomset).menge:
-        print(subset.name)
     assert (sg ** atomset).unpack_subsets() == atomset_unpacked
     assert (sg ** atomset).names \
         == atomset1.names
@@ -397,9 +393,6 @@ def test_Subset():
     pos = cryspy.geo.Pos(cryspy.numbers.Matrix([[fs("1.0(1)")],[0],[0],[1]]))
     subset1 = cr.Subset("S1", fs("p 0 0 0"), {cr.Atom("Cs1", "Cs", pos)})
     subset2 = cr.Subset("S2", fs("p 1 0 0"), {cr.Atom("Cs1", "Cs", pos + fs("d 1 0 0"))})
-    print(subset1.pos)
-    print(subset2.pos)
-    print(((subset1 + "bla") + fs("d 1 0 0")).pos)
     assert (subset1 + "bla") + fs("d 1 0 0") == subset2
     assert hash((subset1 + "bla") + fs("d 1 0 0")) == hash(subset2)
 
