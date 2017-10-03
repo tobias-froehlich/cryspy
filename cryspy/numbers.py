@@ -155,7 +155,9 @@ class Mixed(object):
         assert isinstance(right, Mixed), \
             "Cannot add object of type %s " \
             "to object of type Mixed." % (type(right))
-        if isinstance(self.value, fr.Fraction):
+        if self == -right:
+            return Mixed(0)
+        elif isinstance(self.value, fr.Fraction):
             if isinstance(right.value, fr.Fraction):
                 return Mixed(self.value + right.value)
             elif isinstance(right.value, uc.UFloat):
@@ -218,7 +220,9 @@ class Mixed(object):
         assert isinstance(right, Mixed), \
             "Cannot subtract object of type %s " \
             "from object of type Mixed." % (type(right))
-        if isinstance(self.value, fr.Fraction):
+        if self == right:
+            return Mixed(0)
+        elif isinstance(self.value, fr.Fraction):
             if isinstance(right.value, fr.Fraction):
                 return Mixed(self.value - right.value)
             elif isinstance(right.value, uc.UFloat):
@@ -280,6 +284,9 @@ class Mixed(object):
             right = Mixed(right)
         if not(isinstance(right, Mixed)):
             return NotImplemented
+        if right != 0:
+            if self == 1/right:
+                return Mixed(1)
         if isinstance(self.value, fr.Fraction):
             if isinstance(right.value, fr.Fraction):
                 return Mixed(self.value * right.value)
@@ -357,7 +364,9 @@ class Mixed(object):
             right = Mixed(right)
         if not isinstance(right, Mixed):
             return NotImplemented
-        if isinstance(self.value, fr.Fraction):
+        if self == right:
+            return Mixed(1)
+        elif isinstance(self.value, fr.Fraction):
             if isinstance(right.value, fr.Fraction):
                 return Mixed(self.value / right.value)
             elif isinstance(right.value, uc.UFloat):

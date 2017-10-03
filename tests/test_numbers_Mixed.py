@@ -80,7 +80,7 @@ def test_Mixed():
     a5 = -a3
     a6 = -a1
     summe = a1 + a2 + a3 + a4 + a5 + a6
-    null = nb.Mixed(uc.ufloat(0.0, 0.0))
+    null = nb.Mixed(0)
     assert hash(null) == hash(summe)
 
 
@@ -279,6 +279,17 @@ def test_Mixed():
     assert isinstance((f + me).value, uc.UFloat)
     assert f + me == nb.Mixed(f + e)
 
+    assert mq + (-q) == nb.Mixed(0)
+    assert q + (-mq) == nb.Mixed(0)
+    assert me + (-e) == nb.Mixed(0)
+    assert e + (-me) == nb.Mixed(0)
+    assert mi + (-i) == nb.Mixed(0)
+    assert i + (-mi) == nb.Mixed(0)
+    assert mf + (-f) == nb.Mixed(0)
+    assert f + (-mf) == nb.Mixed(0)
+
+
+
     # Subtraction
     q1 = fr.Fraction(1, 2)
     q2 = fr.Fraction(1, 4)
@@ -456,6 +467,16 @@ def test_Mixed():
     assert isinstance(f1 - mf2, nb.Mixed)
     assert isinstance((f1 - mf2).value, float)
     assert f1 - mf2 == nb.Mixed(3.5 - 3.4)
+
+    assert mq - q == nb.Mixed(0)
+    assert q - mq == nb.Mixed(0)
+    assert me - e == nb.Mixed(0)
+    assert e - me == nb.Mixed(0)
+    assert mi - i == nb.Mixed(0)
+    assert i - mi == nb.Mixed(0)
+    assert mf - f == nb.Mixed(0)
+    assert f - mf == nb.Mixed(0)
+
 
     # Multiplication
 
@@ -635,6 +656,15 @@ def test_Mixed():
     assert isinstance(f1 * mf2, nb.Mixed)
     assert isinstance((f1 * mf2).value, float)
     assert f1 * mf2 == nb.Mixed(11.9)
+
+    assert mq * (1/q) == nb.Mixed(1)
+    assert q * (1/mq) == nb.Mixed(1)
+    assert me * (1/e) == nb.Mixed(1)
+    assert e * (1/me) == nb.Mixed(1)
+    assert i * (1/mi) == nb.Mixed(1)
+    assert mf * (1/f) == nb.Mixed(1)
+    assert f * (1/mf) == nb.Mixed(1)
+
 
     # Multiplication with integer 0
 
@@ -836,6 +866,16 @@ def test_Mixed():
     assert isinstance((f1 / mf2).value, float)
     assert f1 / mf2 == nb.Mixed(0.9375)
 
+    assert mq / q == nb.Mixed(1)
+    assert q / mq == nb.Mixed(1)
+    assert me / e == nb.Mixed(1)
+    assert e / me == nb.Mixed(1)
+    assert mi / i == nb.Mixed(1)
+    assert i / mi == nb.Mixed(1)
+    assert mf / f == nb.Mixed(1)
+    assert f / mf == nb.Mixed(1)
+
+
     # Dividing integer 0
 
     q = fr.Fraction(2, 3)
@@ -1024,9 +1064,9 @@ def test_Mixed():
     a = nb.rad2deg(1)
     assert approx(a.value, 57.295779513082323)
     a = nb.rad2deg(nb.Mixed(3.1415926535897931))
-    assert approx(a.value, 180.0)
+    assert a.value == 180
     a = nb.rad2deg(3.1415926535897931)
-    assert approx(a.value, 180.0)
+    assert a.value == 180
 
     a = nb.sin(nb.Mixed(fr.Fraction(1, 2)))
     assert isinstance(a, nb.Mixed)
