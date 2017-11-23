@@ -331,7 +331,6 @@ class Face(Drawable):
             return NotImplemented
 
     def __rpow__(self, left):
-        print("+++++++++++++++++", type(left))
         if isinstance(left, geo.Operator) \
             or isinstance(left, geo.Coset):
             must_flip = False
