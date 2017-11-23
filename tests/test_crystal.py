@@ -160,7 +160,7 @@ def test_Face():
     assert f3.flip() == f4
     assert f + d == cr.Face("F", [fs("p 0 0 1/2"), fs("p 1 0 1/2"), fs("p 0 1 1/2")])
     assert fs("x+1/2,y,z") ** f == cr.Face("F", [fs("p 1/2 0 0"), fs("p 3/2 0 0"), fs("p 1/2 1 0")])
-    assert fs("{x+3/2,y,z}") ** f == cr.Face("F", [fs("p 1/2 0 0"), fs("p 1/2 0 0"), fs("p 1/2 0 0")])
+    assert fs("{x+3/2,y,z}") ** f == cr.Face("F", [fs("p 1/2 0 0"), fs("p 3/2 0 0"), fs("p 1/2 1 0")])
     f = cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")])
     assert (f + "test").name == "Ftest"
 
@@ -191,6 +191,17 @@ def test_Face():
     assert f.flip().opacity == f.opacity
     assert f.flip().color == f.color
 
+    p1 = fs("p 0.12(3) 0 0")
+    p2 = fs("y,z,x")**p1
+    p3 = fs("z,-x,y")**p1
+    F = cr.Face("F", [p1, p2, p3])
+    F1 = fs("z,-x,-y")**F
+    F2 = fs("z,y,x")**F
+    assert F1 == F
+    assert F2 == F
+
+    F = cr.Face("F", [fs("p 1/2 0 0"), fs("p 0 1/2 0"), fs("p 0 0 1/2")])
+    assert fs("{x+1/2,y+1/2,z+1/2}") ** F == fs("x+1/2,y+1/2,z+1/2") ** F
     
 
 def test_Bitmapface():
@@ -258,7 +269,8 @@ def test_Atomset():
                            cr.Atom("Cs2_1", "Cs", fs("p 3/4 3/4 0")), \
                            momentum, \
                            bond, \
-                           cr.Face("F", [fs("p 0 0 0"), fs("p 0 0 0"), fs("p 0 0 0")])})
+                           cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")]), \
+                           cr.Face("F_1", [fs("p 1 1 0"), fs("p 1 0 0"), fs("p 0 1 0")])})
     assert atomset1 == atomset2
     assert atomset1.names == atomset2.names
 
@@ -268,7 +280,14 @@ def test_Atomset():
                            cr.Atom("Cs2_2", "Cs", fs("p 3/4 3/4 0")), \
                            momentum, \
                            bond, \
-                           cr.Face("F", [fs("p 0 0 0"), fs("p 0 0 0"), fs("p 0 0 0")])})
+                           cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")]),
+                           cr.Face("F_1", [fs("p 1 1 0"), fs("p 1 0 0"), fs("p 0 1 0")])})
+    for item in atomset1.menge:
+        print(item)
+        if isinstance(item, cr.Face):
+            print(item.name)
+            for point in item.corners:
+                print(point)
     assert atomset1 == atomset2
     assert atomset1.names == atomset2.names
 

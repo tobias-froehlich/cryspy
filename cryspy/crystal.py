@@ -331,16 +331,23 @@ class Face(Drawable):
             return NotImplemented
 
     def __rpow__(self, left):
+        print("+++++++++++++++++", type(left))
         if isinstance(left, geo.Operator) \
             or isinstance(left, geo.Coset):
             must_flip = False
             if isinstance(left, geo.Operator):
                 if float(left.value.det()) < 0:
                     must_flip = True
+                result = Face(self.name, [left ** corner for corner in self.corners])
             elif isinstance(left, geo.Coset):
                 if float(left.symmetry.value.det()) < 0:
                     must_flip = True
-            result = Face(self.name, [left ** corner for corner in self.corners])
+                correct = (left**self.pos - left.symmetry**self.pos).to_Symmetry()
+                result = Face(
+                    self.name,
+                    [correct ** (left.symmetry ** corner)
+                        for corner in self.corners]
+                )
             if self.has_color:
                 result.set_color(self.color)
             if self.has_opacity:
