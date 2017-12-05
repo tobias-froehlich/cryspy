@@ -8,5 +8,6 @@ import cryspy.fromstr
 import cryspy.niceprint
 import cryspy.tables
 import cryspy.blender
+import cryspy.povray
 import cryspy.lab
 import cryspy.utils

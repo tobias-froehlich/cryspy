@@ -143,6 +143,21 @@ class Mixed(object):
         else:
             return self
 
+    def is_zero(self):
+         # Returns True iff the value is any kind of zero.
+         if isinstance(self.value, fr.Fraction):
+             return self.value == 0
+         elif isinstance(self.value, uc.UFloat):
+             val = Mixed(self.value.n)
+             return val == 0.0
+         elif isinstance(self.value, int):
+             return self.value == 0
+         elif isinstance(self.value, float):
+             val = Mixed(self.value)
+             return val == 0.0
+
+
+
     def __add__(self, right):
         if isinstance(right, fr.Fraction):
             right = Mixed(right)
@@ -284,7 +299,7 @@ class Mixed(object):
             right = Mixed(right)
         if not(isinstance(right, Mixed)):
             return NotImplemented
-        if right != 0:
+        if not right.is_zero():
             if self == 1/right:
                 return Mixed(1)
         if isinstance(self.value, fr.Fraction):

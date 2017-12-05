@@ -688,6 +688,109 @@ def test_Mixed():
         assert z * m0 == m0
         assert m0 * z == m0
 
+    # Multiplication with other 0s
+    q = fr.Fraction(2, 3)
+    e = uc.ufloat(1.2, 0.1)
+    i = 4
+    f = 3.5
+    mq = nb.Mixed(q)
+    me = nb.Mixed(e)
+    mi = nb.Mixed(i)
+    mf = nb.Mixed(f)
+    
+    e0 = uc.ufloat(0.0, 0.1)
+    e00 = uc.ufloat(0.0, 0.0)
+    i0 = 0
+    f0 = 0.0
+    me0 = nb.Mixed(e0)
+    me00 = nb.Mixed(e00)
+    mi0 = nb.Mixed(i0)
+    mf0 = nb.Mixed(f0)
+
+    assert approx((mq * me0).value.n, 0.0)
+    assert approx((mq * me0).value.s, 0.066666666666666666666666)
+    assert approx((q * me0).value.n, 0.0)
+    assert approx((q * me0).value.s, 0.066666666666666666666666)
+    assert approx((mq * e0).value.n, 0.0)
+    assert approx((mq * e0).value.s, 0.066666666666666666666666)
+    assert approx((me0 * mq).value.n, 0.0)
+    assert approx((me0 * mq).value.s, 0.066666666666666666666666)
+    assert approx((e0 * mq).value.n, 0.0)
+    assert approx((e0 * mq).value.s, 0.066666666666666666666666)
+    assert approx((me0 * q).value.n, 0.0)
+    assert approx((me0 * q).value.s, 0.066666666666666666666666)
+    assert approx((mq * me00).value.n, 0.0)
+    assert approx((mq * me00).value.s, 0.0)
+    assert approx((q * me00).value.n, 0.0)
+    assert approx((q * me00).value.s, 0.0)
+    assert approx((mq * e00).value.n, 0.0)
+    assert approx((mq * e00).value.s, 0.0)
+    assert approx((me00 * mq).value.n, 0.0)
+    assert approx((me00 * mq).value.s, 0.0)
+    assert approx((e00 * mq).value.n, 0.0)
+    assert approx((e00 * mq).value.s, 0.0)
+    assert approx((me00 * q).value.n, 0.0)
+    assert approx((me00 * q).value.s, 0.0)
+
+    assert mq * mi0 == 0
+    assert q * mi0 == 0
+    assert mq * i0 == 0
+    assert mi0 * mq == 0
+    assert i0 * mq == 0
+    assert mi0 * q == 0
+
+    assert approx((mq * mf0).value, 0.0)
+    assert approx((q * mf0).value, 0.0)
+    assert approx((mq * f0).value, 0.0)
+    assert approx((mf0 * mq).value, 0.0)
+    assert approx((f0 * mq).value, 0.0)
+    assert approx((mf0 * q).value, 0.0)
+
+    assert approx((me * me0).value.n, 0.0)
+    assert approx((me * me0).value.s, 0.12)
+    assert approx((e * me0).value.n, 0.0)
+    assert approx((e * me0).value.s, 0.12)
+    assert approx((me * e0).value.n, 0.0)
+    assert approx((me * e0).value.s, 0.12)
+    assert approx((me0 * me).value.n, 0.0)
+    assert approx((me0 * me).value.s, 0.12)
+    assert approx((e0 * me).value.n, 0.0)
+    assert approx((e0 * me).value.s, 0.12)
+    assert approx((me0 * e).value.n, 0.0)
+    assert approx((me0 * e).value.s, 0.12)
+    assert approx((me * me00).value.n, 0.0)
+    assert approx((me * me00).value.s, 0.0)
+    assert approx((e * me00).value.n, 0.0)
+    assert approx((e * me00).value.s, 0.0)
+    assert approx((me * e00).value.n, 0.0)
+    assert approx((me * e00).value.s, 0.0)
+    assert approx((me00 * me).value.n, 0.0)
+    assert approx((me00 * me).value.s, 0.0)
+    assert approx((e00 * me).value.n, 0.0)
+    assert approx((e00 * me).value.s, 0.0)
+    assert approx((me00 * e).value.n, 0.0)
+    assert approx((me00 * e).value.s, 0.0)
+
+    assert me * mi0 == 0
+    assert e * mi0 == 0
+    assert me * i0 == 0
+    assert mi0 * me == 0
+    assert i0 * me == 0
+    assert mi0 * e == 0
+
+    assert approx((me * mf0).value.n, 0.0)
+    assert approx((me * mf0).value.s, 0.0)
+    assert approx((e * mf0).value.n, 0.0)
+    assert approx((e * mf0).value.s, 0.0)
+    assert approx((me * f0).value.n, 0.0)
+    assert approx((me * f0).value.s, 0.0)
+    assert approx((mf0 * me).value.n, 0.0)
+    assert approx((mf0 * me).value.s, 0.0)
+    assert approx((f0 * me).value.n, 0.0)
+    assert approx((f0 * me).value.s, 0.0)
+    assert approx((mf0 * e).value.n, 0.0)
+    assert approx((mf0 * e).value.s, 0.0)
+
     # Division
     q1 = fr.Fraction(2, 3)
     q2 = fr.Fraction(3, 4)

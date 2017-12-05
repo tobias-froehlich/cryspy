@@ -23,3 +23,8 @@ blender__diffuse_light = 0.5
 
 # Difference of the cases, whether you make segments 4 or 128,
 # is for the *.blend-file a difference of ca. 50 KB per arrow.
+
+povray__thickness_of_axis_shaft = blender__thickness_of_axis_shaft
+povray__axes_color = blender__axes_color
+povray__thickness_of_axis_tip = blender__thickness_of_axis_tip
+povray__height_of_axis_tip = blender__height_of_axis_tip
