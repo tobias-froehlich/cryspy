@@ -28,3 +28,7 @@ povray__thickness_of_axis_shaft = blender__thickness_of_axis_shaft
 povray__axes_color = blender__axes_color
 povray__thickness_of_axis_tip = blender__thickness_of_axis_tip
 povray__height_of_axis_tip = blender__height_of_axis_tip
+povray__std_bond_thickness = blender__std_bond_thickness
+povray__std_bond_color = blender__std_bond_color
+povray__std_face_color = blender__std_face_color
+povray__std_face_opacity = blender__std_face_opacity

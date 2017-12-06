@@ -117,6 +117,9 @@ def test_Bond():
     assert b + d == cr.Bond("B", fs("p 0 0 1/2"), fs("p 0 0 1"))
     assert fs("x+1/2,y,z") ** b == cr.Bond("B", fs("p 1/2 0 0"), fs("p 1/2 0 1/2"))
     assert fs("{x+3/2,y,z}") ** b == cr.Bond("B", fs("p 1/2 0 0"), fs("p 1/2 0 1/2"))
+    assert fs("{x,y,z+3/4}") ** b == cr.Bond("B", fs("p 0 0 -1/4"), fs("p 0 0 1/4"))
+    b = cr.Bond("B", fs("p 0 0 0"), fs("p 1/2 1/2 1/2"))
+    assert fs("{-x,-y,-z}") ** b == cr.Bond("B", fs("p 1 1 1"), fs("p 1/2 1/2 1/2"))
     b = cr.Bond("B", fs("p 0 0 0"), fs("p 0 0 1/2"))
     assert (b + "test").name == "Btest"
     b1 = cr.Bond("B", fs("p 0.09 0 0"), fs("p -0.1 0 0"))
@@ -268,7 +271,8 @@ def test_Atomset():
                            cr.Atom("Cs2", "Cs", fs("p 1/4 1/4 0")), \
                            cr.Atom("Cs2_1", "Cs", fs("p 3/4 3/4 0")), \
                            momentum, \
-                           bond, \
+                           cr.Bond("B_1", fs("p 0 0 0"), fs("p 1/2 1/2 1/2")), \
+                           cr.Bond("B", fs("p 1 1 1"), fs("p 1/2 1/2 1/2")), \
                            cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")]), \
                            cr.Face("F_1", [fs("p 1 1 0"), fs("p 1 0 0"), fs("p 0 1 0")])})
     assert atomset1 == atomset2
@@ -279,7 +283,8 @@ def test_Atomset():
                            cr.Atom("Cs2_1", "Cs", fs("p 1/4 1/4 0")), \
                            cr.Atom("Cs2_2", "Cs", fs("p 3/4 3/4 0")), \
                            momentum, \
-                           bond, \
+                           cr.Bond("B_1", fs("p 0 0 0"), fs("p 1/2 1/2 1/2")), \
+                           cr.Bond("B", fs("p 1 1 1"), fs("p 1/2 1/2 1/2")), \
                            cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")]),
                            cr.Face("F_1", [fs("p 1 1 0"), fs("p 1 0 0"), fs("p 0 1 0")])})
     for item in atomset1.menge:

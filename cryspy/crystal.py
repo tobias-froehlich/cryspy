@@ -223,7 +223,18 @@ class Bond(Drawable):
     def __rpow__(self, left):
         if isinstance(left, geo.Operator) \
             or isinstance(left, geo.Coset):
-            result = Bond(self.name, left ** self.start, left ** self.target)
+            if isinstance(left, geo.Coset):
+                correct_centre = left ** self.pos
+                wrong_centre   = left.symmetry ** self.pos
+                correction = correct_centre - wrong_centre
+                print(correction)
+                result = Bond(
+                    self.name,
+                    left.symmetry ** self.start + correction,
+                    left.symmetry ** self.target + correction
+                )
+            else:
+                result = Bond(self.name, left ** self.start, left ** self.target)
             if self.has_color:
                 result.set_color(self.color)
             if self.has_thickness:
