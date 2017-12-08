@@ -149,12 +149,11 @@ class Mixed(object):
              return self.value == 0
          elif isinstance(self.value, uc.UFloat):
              val = Mixed(self.value.n)
-             return val == 0.0
+             return np.abs(float(val)) < delta
          elif isinstance(self.value, int):
              return self.value == 0
          elif isinstance(self.value, float):
-             val = Mixed(self.value)
-             return val == 0.0
+             return np.abs(self.value) < delta
 
 
 
@@ -457,7 +456,7 @@ class Mixed(object):
             return NotImplemented
 
 pi = Mixed(3.141592653589793)
-
+floatzero = Mixed(0.0)
 
 def sqrt(number):
     number = Mixed(number)
