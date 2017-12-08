@@ -2,47 +2,87 @@ import cryspy
 from cryspy.fromstr import fromstr as fs
 import cryspy.const as const
 
+# After building a cryspy.crystal.Atomset with a cryspy.geo.Metric,
+# call make_povray_ascript(atomset, metric, "imagename.pov") and then
+# call setup_rendering("imagename.pov"). Then call imagename_render.sh
+# which uses povray to render the image whith the settings you set before.
+#
+# make_povray_script() creates a pov-file, but without camera.
+# setup_rendering() reopens this script and sets a camera.
+# You can call it several times without calling make_povray_script() again,
+# in order to adjust the camera.
+# The sh-script contains a command line with a povray-call that has
+# the correct parameters.
+
 def setup_rendering(povfilename, camera_pos=(1, -20, 10), camera_lookat=(0, 0, 0),
-    camera_sky=(0, 0, 1), camera_angle=30, width=600, height=400, imagefilename=None):
+    camera_sky=(0, 0, 1), camera_angle=30, width=600, height=400, imagefilename=None,
+    legendlist=[]):
+    camerasystem = Camerasystem(
+        camera_pos, camera_lookat, camera_sky, camera_angle, width, height
+    )
+
     if imagefilename == None:
         imagefilename = povfilename[:-4] + ".png"
-    outstr = ""
-    outstr += "//START_CAM\n"
-    outstr = ""
+    camstr = ""
     (pos_x, pos_y, pos_z) = camera_pos
     (la_x, la_y, la_z) = camera_lookat
     (sky_x, sky_y, sky_z) = camera_sky
-    outstr += "camera {\n"
-    outstr += "    location <%f, %f, %f>\n"%(pos_x, pos_z, pos_y)
-    outstr += "    angle %f\n"%(camera_angle)
-    outstr += "    sky <%f, %f, %f>\n"%(sky_x, sky_z, sky_y)
-    outstr += "    look_at <%f, %f, %f>\n"%(la_x, la_z, la_y)
-    outstr += "    right <%i, 0, 0>\n"%(width)
-    outstr += "    up <0, %i, 0>\n"%(height)
-    outstr += "}\n"
-    outstr += ""
-    outstr += "background {color rgb <1, 1, 1>}\n"
-    outstr += "\n"
-    outstr += "light_source {\n"
-    outstr += "    <0, 10, 3>\n"
-    outstr += "    color rgb <1, 1, 1>\n"
-    outstr += "}\n"
-    outstr += "global_settings { ambient_light rgb <4, 4, 4> }\n"
-    outstr += "//END_CAM\n"
-    outstr += "\n"
+    camstr += "camera {\n"
+    camstr += "    location <%f, %f, %f>\n"%(pos_x, pos_z, pos_y)
+    camstr += "    angle %f\n"%(camera_angle)
+    camstr += "    sky <%f, %f, %f>\n"%(sky_x, sky_z, sky_y)
+    camstr += "    look_at <%f, %f, %f>\n"%(la_x, la_z, la_y)
+    camstr += "    right <%i, 0, 0>\n"%(width)
+    camstr += "    up <0, %i, 0>\n"%(height)
+    camstr += "}\n"
+    camstr += ""
+    camstr += "background {color rgb <1, 1, 1>}\n"
+    camstr += "\n"
+    camstr += "light_source {\n"
+    camstr += "    <0, 10, 3>\n"
+    camstr += "    color rgb <1, 1, 1>\n"
+    camstr += "}\n"
+    camstr += "global_settings { ambient_light rgb <4, 4, 4> }\n"
     infile = open(povfilename, "r")
     instr = infile.read()
     infile.close()
     inlines = instr.split("\n")
-    before_camera = True
-    after_camera = False
+    during_cam = False
+    cam_finished = False
+    during_legend = False
+    legend_finished = False
+    outstr = ""
     for inline in inlines:
-        if after_camera:
-            outstr += inline + "\n"
-        if inline == "//START_CAM":
-            before_camera = False
         if inline == "//END_CAM":
-            after_camera = True
+            during_cam = False
+        if inline == "//START_CAM":
+            during_cam = True
+            outstr += inline + "\n"
+        if inline == "//END_LEGEND":
+            during_legend = False
+        if inline == "//START_LEGEND":
+            during_legend = True
+            outstr += inline + "\n"
+        if during_cam:
+            if not cam_finished:
+                outstr += camstr
+                cam_finished = True
+        elif during_legend:
+            if not legend_finished:
+                for t in range(len(legendlist)):
+                    typ = legendlist[len(legendlist) - t - 1]
+                    (x, y, z) = camerasystem.xyz(
+                        -1 + cryspy.const.povray__legend_horizontal_margin,
+                        -0.9 + cryspy.const.povray__legend_vertical_margin
+                            + t*cryspy.const.povray__legend_spacing
+                    )
+                    outstr += "object {\n"
+                    outstr += "    Atom_%s\n"%(typ)
+                    outstr += "    translate <%f, %f, %f>\n"%(x, z, y)
+                    outstr += "}\n"
+                legend_finished = True
+        else:
+            outstr += inline + "\n"
             
     outfile = open(povfilename, "w")
     outfile.write(outstr)
@@ -52,6 +92,40 @@ def setup_rendering(povfilename, camera_pos=(1, -20, 10), camera_lookat=(0, 0, 0
     renderfile.write("povray Width=%i Height=%i +V +I%s +O%s +P +A0.2"%(width, height, povfilename, imagefilename))
     renderfile.close()
     
+    
+class Camerasystem:
+    def __init__(self, camera_pos, camera_lookat,
+        camera_sky, camera_angle, width, height):
+        def tuple_to_pos(tup):
+            return fs("p %f %f %f"%(tup[0], tup[1], tup[2]))
+        def tuple_to_dif(tup):
+            return fs("d %f %f %f"%(tup[0], tup[1], tup[2]))
+        camera_pos = tuple_to_pos(camera_pos)
+        camera_lookat = tuple_to_pos(camera_lookat)
+        camera_sky = tuple_to_dif(camera_sky)
+        cart = cryspy.geo.Cellparameters(1, 1, 1, 90, 90, 90).to_Metric()
+        direction = (camera_lookat - camera_pos) * (1 / cart.length(camera_lookat - camera_pos))
+        up = camera_sky - direction * cart.dot(camera_sky, direction)
+        up = up * (1 / cart.length(up))
+        (x1, y1, z1) = (direction.x(), direction.y(), direction.z())
+        (x2, y2, z2) = (up.x(), up.y(), up.z())
+        right = fs("d %f %f %f"%(y1*z2 - y2*z1, z1*x2 - z2*x1, x1*y2 - x2*y1))
+        tan = cryspy.numbers.dsin(camera_angle * 0.5) / cryspy.numbers.dcos(camera_angle * 0.5)
+        up = up * cart.length(camera_lookat - camera_pos) * (tan * height / width)
+        right = right * cart.length(camera_lookat - camera_pos) * tan
+        self.right = right
+        self.up = up
+        self.lookat = camera_lookat
+
+    def xyz(self, u, v):
+        # u, v: camera-coordinates
+        # returns (x, y, z): cartesian coordinates
+        pos = self.lookat \
+            + self.right * cryspy.numbers.Mixed(u) \
+            + self.up * cryspy.numbers.Mixed(v)
+        (x, y, z) = (pos.x(), pos.y(), pos.z())
+        return (x, y, z)
+
 
 def make_povray_script(atomset, metric, outfilename):
     atomset = atomset.unpack_subsets()
@@ -90,6 +164,9 @@ def make_povray_script(atomset, metric, outfilename):
         outstr += "        color rgb <%f, %f, %f>\n"%(r, g, b)
         outstr += "    }\n"
         outstr += "}\n"
+
+    outstr += "//START_LEGEND\n"
+    outstr += "//END_LEGEND\n"
 
     for atom in atoms:
         pos_c = schmidt ** atom.pos

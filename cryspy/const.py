@@ -32,3 +32,6 @@ povray__std_bond_thickness = blender__std_bond_thickness
 povray__std_bond_color = blender__std_bond_color
 povray__std_face_color = blender__std_face_color
 povray__std_face_opacity = blender__std_face_opacity
+povray__legend_spacing = 0.2 # spacing between legend atoms relativ to image height
+povray__legend_horizontal_margin = 0.1 # spacing left of legend to egde relative to image width
+povray__legend_vertical_margin = 0.2 # spacing below legend to edge relative to image height
