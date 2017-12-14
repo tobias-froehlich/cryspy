@@ -141,6 +141,7 @@ def make_povray_script(atomset, metric, outfilename):
     atoms = []
     bonds = []
     faces = []
+    momentums = []
     for item in atomset.menge:
         if isinstance(item, cryspy.crystal.Atom):
             atoms.append(item)
@@ -148,6 +149,8 @@ def make_povray_script(atomset, metric, outfilename):
             bonds.append(item)
         elif isinstance(item, cryspy.crystal.Face):
             faces.append(item)
+        elif isinstance(item, cryspy.crystal.Momentum):
+            momentums.append(item)
 
     atomtypes = []
     for atom in atoms:
@@ -192,6 +195,39 @@ def make_povray_script(atomset, metric, outfilename):
     for face in faces:
         outstr += draw_face(metric, face)
 
+    for momentum in momentums:
+        if momentum.has_plotlength:
+            plotlength = momentum.plotlength
+        else:
+            plotlength = const.povray__std_momentum_plotlength
+        if momentum.has_color:
+            color = momentum.color
+        else:
+            color = const.povray__std_momentum_color
+        x0 = float((schmidt ** momentum.pos).x())
+        y0 = float((schmidt ** momentum.pos).y())
+        z0 = float((schmidt ** momentum.pos).z())
+        dx = float((schmidt ** momentum.direction).x())
+        dy = float((schmidt ** momentum.direction).y())
+        dz = float((schmidt ** momentum.direction).z())
+
+
+        """
+        length = np.sqrt(dx*dx + dy*dy + dz*dz)
+        x1 = x0 - dx * plotlength / length
+        y1 = y0 - dy * plotlength / length
+        z1 = z0 - dz * plotlength / length
+        x2 = x0 + dx * plotlength / length
+        y2 = y0 + dy * plotlength / length
+        z2 = z0 + dz * plotlength / length
+        """
+
+        length = metric.length(momentum.direction)
+        start = momentum.pos - momentum.direction * cryspy.numbers.Mixed(plotlength / length)
+        end = momentum.pos + momentum.direction * cryspy.numbers.Mixed(plotlength / length)
+        outstr += draw_momentum(metric, start, end, color)
+
+
     outfile = open(outfilename, "w")
     outfile.write(outstr)
     outfile.close()
@@ -224,6 +260,16 @@ def draw_axis(metric, xyorz):
         const.povray__thickness_of_axis_tip,
         const.povray__axes_color
     )
+    return outstr
+
+def draw_momentum(metric, start, end, color):
+    outstr = ""
+    length = metric.length(end - start)
+    cone_start = end - (end - start)*cryspy.numbers.Mixed(const.povray__height_of_momentum_tip/length)
+    thickness = const.povray__thickness_of_momentum_shaft
+    outstr += draw_cylinder(metric, start, cone_start, thickness, color)
+    thickness = const.povray__thickness_of_momentum_tip
+    outstr += draw_cone(metric, cone_start, end, thickness, color)
     return outstr
 
 def draw_cylinder(metric, start, end, thickness, color):
