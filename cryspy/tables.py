@@ -388,7 +388,7 @@ def colorscheme(typ):
     assert typ in colorscheme_table.keys(), \
         "Error: The atom-type %s is not known. You can add it to " \
         "the cryspy tables by the following command:\n"\
-        "cryspy.table.add_atom_to_colorscheme('%s', 0.3, (0.5, 0.5, 0.5))\n" \
+        "cryspy.tables.add_atom_to_colorscheme('%s', 0.3, (0.5, 0.5, 0.5))\n" \
         "Then the atom will be drawn as a sphere of size 0.3 in grey. " \
         "Of course, you can use another size or color."%(typ, typ)
 

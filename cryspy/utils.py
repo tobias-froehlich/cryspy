@@ -456,8 +456,9 @@ def auto_tetrahedron(name, atomset, metric, centre, typelist,
 
     atomlist = []
     for atom in atomset.menge:
-        if atom.typ in typelist:
-            atomlist.append(atom)
+        if isinstance(atom, cryspy.crystal.Atom):
+            if atom.typ in typelist:
+                atomlist.append(atom)
 
     distancelist = []
     for atom in atomlist:
@@ -511,7 +512,6 @@ def read_atomset_from_cif(infilepathname):
                 if words[0][0] == "_":
                     loop_header += [words[0]]
                 else:
-                    print(loop_header)
                     status = "reading_loop_data"
             if status == "reading_loop_data":
                 if len(words) == len(loop_header):
@@ -536,7 +536,6 @@ def read_atomset_from_cif(infilepathname):
                         and isinstance(x, cryspy.numbers.Mixed) \
                         and isinstance(y, cryspy.numbers.Mixed) \
                         and isinstance(z, cryspy.numbers.Mixed):
-                        print(atom_name, atom_type, x, y, z)
                         menge.add(
                             cryspy.crystal.Atom(
                                 atom_name, atom_type,
