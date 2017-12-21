@@ -548,6 +548,8 @@ class Transformation(Operator):
                             self ** right.liste[1],
                             self ** right.liste[2])
         elif isinstance(right, Pos):
+            print(self.value)
+            print(right.value)
             return Pos(self.value * right.value)
         elif isinstance(right, Dif):
             return Dif(self.value * right.value)

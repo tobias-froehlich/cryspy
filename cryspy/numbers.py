@@ -143,6 +143,20 @@ class Mixed(object):
         else:
             return self
 
+    def is_zero(self):
+         # Returns True iff the value is any kind of zero.
+         if isinstance(self.value, fr.Fraction):
+             return self.value == 0
+         elif isinstance(self.value, uc.UFloat):
+             val = Mixed(self.value.n)
+             return np.abs(float(val)) < delta
+         elif isinstance(self.value, int):
+             return self.value == 0
+         elif isinstance(self.value, float):
+             return np.abs(self.value) < delta
+
+
+
     def __add__(self, right):
         if isinstance(right, fr.Fraction):
             right = Mixed(right)
@@ -155,7 +169,9 @@ class Mixed(object):
         assert isinstance(right, Mixed), \
             "Cannot add object of type %s " \
             "to object of type Mixed." % (type(right))
-        if isinstance(self.value, fr.Fraction):
+        if self == -right:
+            return Mixed(0)
+        elif isinstance(self.value, fr.Fraction):
             if isinstance(right.value, fr.Fraction):
                 return Mixed(self.value + right.value)
             elif isinstance(right.value, uc.UFloat):
@@ -218,7 +234,9 @@ class Mixed(object):
         assert isinstance(right, Mixed), \
             "Cannot subtract object of type %s " \
             "from object of type Mixed." % (type(right))
-        if isinstance(self.value, fr.Fraction):
+        if self == right:
+            return Mixed(0)
+        elif isinstance(self.value, fr.Fraction):
             if isinstance(right.value, fr.Fraction):
                 return Mixed(self.value - right.value)
             elif isinstance(right.value, uc.UFloat):
@@ -280,6 +298,9 @@ class Mixed(object):
             right = Mixed(right)
         if not(isinstance(right, Mixed)):
             return NotImplemented
+        if not right.is_zero():
+            if self == 1/right:
+                return Mixed(1)
         if isinstance(self.value, fr.Fraction):
             if isinstance(right.value, fr.Fraction):
                 return Mixed(self.value * right.value)
@@ -357,7 +378,9 @@ class Mixed(object):
             right = Mixed(right)
         if not isinstance(right, Mixed):
             return NotImplemented
-        if isinstance(self.value, fr.Fraction):
+        if self == right:
+            return Mixed(1)
+        elif isinstance(self.value, fr.Fraction):
             if isinstance(right.value, fr.Fraction):
                 return Mixed(self.value / right.value)
             elif isinstance(right.value, uc.UFloat):
@@ -433,7 +456,7 @@ class Mixed(object):
             return NotImplemented
 
 pi = Mixed(3.141592653589793)
-
+floatzero = Mixed(0.0)
 
 def sqrt(number):
     number = Mixed(number)

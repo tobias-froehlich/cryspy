@@ -14,17 +14,17 @@ def calculate_twotheta(metric, wavelength, q):
         "cryspy.numbers.Mixed or int or float."
     assert isinstance(q, cryspy.geo.Rec), \
         "Third argument of calculate_twotheta(...) must be of type cryspy.geo.Rec!"
-
-
     # Lattice plane distance  =  1/(length of reciprocal vector)
     # can be found here:
     # Carmelo Giacovazzo et al.: Fundamentals of Crystallography
     # Oxford University Press (1992)
-
     d = float(1 / metric.length(q))
     theta = np.arcsin(float(wavelength)/2/d)
     twotheta = 2 * theta
     return twotheta
+
+def calculate_dtwotheta(metric, wavelength, q):
+    return cryspy.numbers.rad2deg(calculate_twotheta(metric, wavelength, q))
 
 class Karussell:
     def __init__(self, metric, zerodirection, positivedirection):
@@ -333,6 +333,106 @@ def octahedron(name, top, one, two, three, four, bottom,
     )
     return subset
 
+def auto_octahedron(name, atomset, metric, centre, typelist, 
+               facecolor, faceopacity, plotedges, edgecolor, edgewidth):
+    assert isinstance(name, str), \
+        "The name of the octahedron must be of type str."
+    assert isinstance(atomset, cryspy.crystal.Atomset), \
+        "The second entry of cryspy.utils.auto_octahedron() must be " \
+        "of type cryspy.crystal.Atomset."
+    assert isinstance(metric, cryspy.geo.Metric), \
+        "The third entry of cryspy.utils.auto_octahedron() must be " \
+        "of type cryspy.geo.Metric"
+    assert isinstance(centre, cryspy.geo.Pos), \
+        "The centre of the auto_octahedron must be of type " \
+        "cryspy.geo.Pos ."
+    for typ in typelist:
+        assert isinstance(typ, str), \
+            "The corners of the octahedron must be of type str."
+    for color in [facecolor, edgecolor]:
+        assert isinstance(color, list) or isinstance(color, tuple), \
+            "The face- and edgecolor of the octahedron must be " \
+            "lists or tuples."
+        for item in color:
+            assert isinstance(item, float) \
+                or isinstance(item, int) \
+                or isinstance(item, cryspy.numbers.Mixed), \
+                "The face- and edgecolor of the octahedron must be " \
+                "lists or tuples of type float, int or " \
+                "cryspy.numbers.Mixed ."
+    assert isinstance(faceopacity, float) \
+        or isinstance(faceopacity, int), \
+        "The faceopacity of the octahedron must be of type " \
+        "float or int."
+    assert isinstance(plotedges, bool), \
+        "The parameter plotedges of the octahedron (says whether " \
+        "to plot the edges as cylinders or not) must be of " \
+        "of type bool (True or False). "
+    assert isinstance(edgewidth, float) \
+        or isinstance(edgewidth, int), \
+        "The edgewidth of the octahedron must be of type " \
+        "float or int."
+
+    atomlist = []
+    for atom in atomset.menge:
+        if atom.typ in typelist:
+            atomlist.append(atom)
+
+    distancelist = []
+    for atom in atomlist:
+        distancelist.append(float(metric.length(centre - atom.pos)))
+
+    atomlist = [i for (j, i) in sorted(zip(distancelist, atomlist), key=lambda pair: pair[0])]
+    topatom = atomlist[0]
+    atomlist = atomlist[1:6]
+    distancelist = []
+    for atom in atomlist:
+        distancelist.append(float(metric.length(topatom.pos - atom.pos)))
+    atomlist = [i for (j, i) in sorted(zip(distancelist, atomlist), key=lambda pair: pair[0])]
+
+    atomlist2 = atomlist[0:3]
+    distancelist2 = []
+    for i in [0, 1, 2]:
+        distancelist2.append(
+            float(metric.length(atomlist2[i].pos - atomlist2[(i+1) % 3].pos))
+          + float(metric.length(atomlist2[i].pos - atomlist2[(i+2) % 3].pos))
+        )
+    print(atomlist2)
+    atomlist2 = [i for (j, i) in sorted(zip(distancelist2, atomlist2), key=lambda pair: pair[0])]
+    print(atomlist2)
+    A = atomlist2[1]
+    B = atomlist2[0]
+    C = atomlist2[2]
+
+    edge0 = A.pos - topatom.pos
+    edge1 = B.pos - topatom.pos
+    edge2 = C.pos - topatom.pos
+    det = edge0.value.hglue(edge1.value).hglue(edge2.value).hglue(
+        cryspy.numbers.Matrix([[0], [0], [0], [1]])
+    ).det()
+
+    if float(det) < 0:
+        oneatom = A
+        twoatom = B
+        threeatom = C
+        fouratom = atomlist[3]
+        bottomatom = atomlist[4]
+    else:
+        oneatom = atomlist[3]
+        twoatom = C
+        threeatom = B
+        fouratom = A
+        bottomatom = atomlist[4]
+    
+    return octahedron(
+        name,
+        topatom.pos, oneatom.pos,
+        twoatom.pos, threeatom.pos,
+        fouratom.pos, bottomatom.pos,
+        facecolor, faceopacity,
+        plotedges, edgecolor, edgewidth
+    )
+
 
 def tetrahedron(name, one, two, three, four, 
                facecolor, faceopacity, plotedges, edgecolor, edgewidth):
@@ -464,14 +564,31 @@ def auto_tetrahedron(name, atomset, metric, centre, typelist,
     for atom in atomlist:
         distancelist.append(float(metric.length(centre - atom.pos)))
 
-    atomlist = [i for (j, i) in sorted(zip(distancelist, atomlist))]
-    return tetrahedron(
-        name,
-        atomlist[0].pos, atomlist[1].pos,
-        atomlist[2].pos, atomlist[3].pos,
-        facecolor, faceopacity,
-        plotedges, edgecolor, edgewidth
-    )
+    print(distancelist)
+    atomlist = [i for (j, i) in sorted(zip(distancelist, atomlist), key=lambda pair: pair[0])]
+    edge01 = atomlist[1].pos - atomlist[0].pos
+    edge02 = atomlist[2].pos - atomlist[0].pos
+    edge03 = atomlist[3].pos - atomlist[0].pos
+    det = edge01.value.hglue(edge02.value).hglue(edge03.value).hglue(
+        cryspy.numbers.Matrix([[0], [0], [0], [1]])
+    ).det()
+    if float(det) < 0:
+        return tetrahedron(
+            name,
+            atomlist[0].pos, atomlist[1].pos,
+            atomlist[2].pos, atomlist[3].pos,
+            facecolor, faceopacity,
+            plotedges, edgecolor, edgewidth
+        )
+    else:
+         return tetrahedron(
+            name,
+            atomlist[0].pos, atomlist[3].pos,
+            atomlist[2].pos, atomlist[1].pos,
+            facecolor, faceopacity,
+            plotedges, edgecolor, edgewidth
+        )
+
 
 def read_metric_from_cif(infilepathname):
     # So far only for cif-files generated by JANA2006, and even this
@@ -879,3 +996,29 @@ def slice_to_bitmap(slice, type, colorrange, format):
                     bitmap[i, j, :] = [0, 0, 1, opacity]
 
     return bitmap
+
+def axes_box(thickness, color):
+    bonds = [
+        cryspy.crystal.Bond("a1", fs("p 0 0 0"), fs("p 1 0 0")),
+        cryspy.crystal.Bond("a2", fs("p 0 0 1"), fs("p 1 0 1")),
+        cryspy.crystal.Bond("a3", fs("p 0 1 1"), fs("p 1 1 1")),
+        cryspy.crystal.Bond("a4", fs("p 0 1 0"), fs("p 1 1 0")),
+        cryspy.crystal.Bond("b1", fs("p 0 0 0"), fs("p 0 1 0")),
+        cryspy.crystal.Bond("b2", fs("p 1 0 0"), fs("p 1 1 0")),
+        cryspy.crystal.Bond("b3", fs("p 1 0 1"), fs("p 1 1 1")),
+        cryspy.crystal.Bond("b4", fs("p 0 0 1"), fs("p 0 1 1")),
+        cryspy.crystal.Bond("c1", fs("p 0 0 0"), fs("p 0 0 1")),
+        cryspy.crystal.Bond("c2", fs("p 0 1 0"), fs("p 0 1 1")),
+        cryspy.crystal.Bond("c3", fs("p 1 1 0"), fs("p 1 1 1")),
+        cryspy.crystal.Bond("c4", fs("p 1 0 0"), fs("p 1 0 1")),
+    ]
+    for bond in bonds:
+        bond.set_color(color)
+        bond.set_thickness(thickness)
+    
+    return cryspy.crystal.Subset(
+        "Axes_Box",
+        fs("p 0 0 0"), 
+        {bond for bond in bonds}
+    )
+

@@ -117,6 +117,9 @@ def test_Bond():
     assert b + d == cr.Bond("B", fs("p 0 0 1/2"), fs("p 0 0 1"))
     assert fs("x+1/2,y,z") ** b == cr.Bond("B", fs("p 1/2 0 0"), fs("p 1/2 0 1/2"))
     assert fs("{x+3/2,y,z}") ** b == cr.Bond("B", fs("p 1/2 0 0"), fs("p 1/2 0 1/2"))
+    assert fs("{x,y,z+3/4}") ** b == cr.Bond("B", fs("p 0 0 -1/4"), fs("p 0 0 1/4"))
+    b = cr.Bond("B", fs("p 0 0 0"), fs("p 1/2 1/2 1/2"))
+    assert fs("{-x,-y,-z}") ** b == cr.Bond("B", fs("p 1 1 1"), fs("p 1/2 1/2 1/2"))
     b = cr.Bond("B", fs("p 0 0 0"), fs("p 0 0 1/2"))
     assert (b + "test").name == "Btest"
     b1 = cr.Bond("B", fs("p 0.09 0 0"), fs("p -0.1 0 0"))
@@ -124,10 +127,6 @@ def test_Bond():
     b1.set_thickness(0.5)
     b2 = cr.Bond("B", fs("p -0.1 0 0"), fs("p 0.09 0 0"))
     b  = cr.Bond("B", fs("p  0.9 0 0"), fs("p 1.09 0 0"))
-    print((b1 % geo.canonical).start)
-    print((b1 % geo.canonical).target)
-    print(b.start)
-    print(b.target)
     assert b1 % geo.canonical == b
     assert b2 % geo.canonical == b
     assert (b1 % geo.canonical).color == b1.color
@@ -142,8 +141,8 @@ def test_Face():
     f__ = cr.Face("F", [fs("p 0 1.0 0"), fs("p 1.0 0 0"), fs("p 0 0 0")])
     assert f == f_
     assert hash(f) == hash(f_)
-    assert f == f__
-    assert hash(f) == hash(f__)
+    assert (f == f__) == False
+    assert (hash(f) == hash(f__)) == False
     f = cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")])
     f_ = cr.Face("F", [fs("p 0 1 0"), fs("p 0 0 0"), fs("p 1 0 0")])
     assert isinstance(f, cr.Face)
@@ -154,14 +153,17 @@ def test_Face():
     f1 = cr.Face("Fblabla", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")])
     f2 = cr.Face("F", [fs("p 0 0 0"), fs("p 0.7 0 0"), fs("p 0 1 0")])
     f3 = cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 2 0")])
+    f4 = cr.Face("F", [fs("p 0 2 0"), fs("p 1 0 0"), fs("p 0 0 0")])
     assert f == f1
     assert f == f_
     assert hash(f) == hash(f_)
     assert (f == f2) == False
     assert (f == f3) == False
+    assert (f3 == f4) == False
+    assert f3.flip() == f4
     assert f + d == cr.Face("F", [fs("p 0 0 1/2"), fs("p 1 0 1/2"), fs("p 0 1 1/2")])
     assert fs("x+1/2,y,z") ** f == cr.Face("F", [fs("p 1/2 0 0"), fs("p 3/2 0 0"), fs("p 1/2 1 0")])
-    assert fs("{x+3/2,y,z}") ** f == cr.Face("F", [fs("p 1/2 0 0"), fs("p 1/2 0 0"), fs("p 1/2 0 0")])
+    assert fs("{x+3/2,y,z}") ** f == cr.Face("F", [fs("p 1/2 0 0"), fs("p 3/2 0 0"), fs("p 1/2 1 0")])
     f = cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")])
     assert (f + "test").name == "Ftest"
 
@@ -178,13 +180,31 @@ def test_Face():
     a3 = cr.Atom("Fe3", "Fe", p3)
     atomset = cr.Atomset({a1, a2, a3})
     atomset = sg**atomset
-    print(atomset)
     assert len(atomset.menge) == 3
     f = cr.Face("F", [p1, p2, p3])
     atomset = cr.Atomset({f})
     assert len(atomset.menge) == 1
     atomset = sg ** atomset
     assert len(atomset.menge) == 1
+    f = cr.Face("F", [fs("p -1 0 0"), fs("p 0 1 0"), fs("p 1 0 0")])
+    f.set_opacity(0.5)
+    f.set_color((1, 0, 0))
+    assert fs("-x, y, -z") ** f == f.flip()
+    assert fs("-x,y,z") ** f == f
+    assert f.flip().opacity == f.opacity
+    assert f.flip().color == f.color
+
+    p1 = fs("p 0.12(3) 0 0")
+    p2 = fs("y,z,x")**p1
+    p3 = fs("z,-x,y")**p1
+    F = cr.Face("F", [p1, p2, p3])
+    F1 = fs("z,-x,-y")**F
+    F2 = fs("z,y,x")**F
+    assert F1 == F
+    assert F2 == F
+
+    F = cr.Face("F", [fs("p 1/2 0 0"), fs("p 0 1/2 0"), fs("p 0 0 1/2")])
+    assert fs("{x+1/2,y+1/2,z+1/2}") ** F == fs("x+1/2,y+1/2,z+1/2") ** F
     
 
 def test_Bitmapface():
@@ -227,7 +247,6 @@ def test_Atomset():
                         "b' = b   \n"
                         "c' = c")
     atomset1 = transformation**atomset
-    print(atomset1)
     atomset2 = cr.Atomset({cr.Atom("Cs1", "Cs", fs("p 0.00000001 -0.00000001 -1/4")), \
                            cr.Atom("Cs2", "Cs", fs("p 1/4 0 -1/4")), \
                            cr.Momentum("M", fs("p 0 0 -1/4"), fs("d 0 0 1")), \
@@ -252,8 +271,10 @@ def test_Atomset():
                            cr.Atom("Cs2", "Cs", fs("p 1/4 1/4 0")), \
                            cr.Atom("Cs2_1", "Cs", fs("p 3/4 3/4 0")), \
                            momentum, \
-                           bond, \
-                           cr.Face("F", [fs("p 0 0 0"), fs("p 0 0 0"), fs("p 0 0 0")])})
+                           cr.Bond("B_1", fs("p 0 0 0"), fs("p 1/2 1/2 1/2")), \
+                           cr.Bond("B", fs("p 1 1 1"), fs("p 1/2 1/2 1/2")), \
+                           cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")]), \
+                           cr.Face("F_1", [fs("p 1 1 0"), fs("p 1 0 0"), fs("p 0 1 0")])})
     assert atomset1 == atomset2
     assert atomset1.names == atomset2.names
 
@@ -262,8 +283,16 @@ def test_Atomset():
                            cr.Atom("Cs2_1", "Cs", fs("p 1/4 1/4 0")), \
                            cr.Atom("Cs2_2", "Cs", fs("p 3/4 3/4 0")), \
                            momentum, \
-                           bond, \
-                           cr.Face("F", [fs("p 0 0 0"), fs("p 0 0 0"), fs("p 0 0 0")])})
+                           cr.Bond("B_1", fs("p 0 0 0"), fs("p 1/2 1/2 1/2")), \
+                           cr.Bond("B", fs("p 1 1 1"), fs("p 1/2 1/2 1/2")), \
+                           cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")]),
+                           cr.Face("F_1", [fs("p 1 1 0"), fs("p 1 0 0"), fs("p 0 1 0")])})
+    for item in atomset1.menge:
+        print(item)
+        if isinstance(item, cr.Face):
+            print(item.name)
+            for point in item.corners:
+                print(point)
     assert atomset1 == atomset2
     assert atomset1.names == atomset2.names
 
@@ -331,8 +360,6 @@ def test_Atomset():
         cr.Atom("S_2.Fe1", "Fe", fs("p -0.1 1/2 0")),
         cr.Atom("S_2.Fe2", "Fe", fs("p  0.1 1/2 0"))
     })
-    for subset in (sg ** atomset).menge:
-        print(subset.name)
     assert (sg ** atomset).unpack_subsets() == atomset_unpacked
     assert (sg ** atomset).names \
         == atomset1.names
@@ -390,9 +417,6 @@ def test_Subset():
     pos = cryspy.geo.Pos(cryspy.numbers.Matrix([[fs("1.0(1)")],[0],[0],[1]]))
     subset1 = cr.Subset("S1", fs("p 0 0 0"), {cr.Atom("Cs1", "Cs", pos)})
     subset2 = cr.Subset("S2", fs("p 1 0 0"), {cr.Atom("Cs1", "Cs", pos + fs("d 1 0 0"))})
-    print(subset1.pos)
-    print(subset2.pos)
-    print(((subset1 + "bla") + fs("d 1 0 0")).pos)
     assert (subset1 + "bla") + fs("d 1 0 0") == subset2
     assert hash((subset1 + "bla") + fs("d 1 0 0")) == hash(subset2)
 
