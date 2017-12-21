@@ -38,11 +38,11 @@ def setup_rendering(povfilename, camera_pos=(1, -20, 10), camera_lookat=(0, 0, 0
     camstr += ""
     camstr += "background {color rgb <1, 1, 1>}\n"
     camstr += "\n"
-    camstr += "light_source {\n"
-    camstr += "    <0, 10, 3>\n"
-    camstr += "    color rgb <1, 1, 1>\n"
-    camstr += "}\n"
-    camstr += "global_settings { ambient_light rgb <4, 4, 4> }\n"
+#    camstr += "light_source {\n"
+#    camstr += "    <0, 10, 3>\n"
+#    camstr += "    color rgb <1, 1, 1>\n"
+#    camstr += "}\n"
+    camstr += "global_settings { ambient_light rgb <7, 7, 7> }\n"
     infile = open(povfilename, "r")
     instr = infile.read()
     infile.close()
