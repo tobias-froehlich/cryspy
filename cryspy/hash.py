@@ -11,6 +11,7 @@ maxufloathash = -1
 
 delta = nb.delta
 
+
 def floathash(number):
    return floathash_new(number)
 

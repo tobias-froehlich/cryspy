@@ -333,6 +333,21 @@ def octahedron(name, top, one, two, three, four, bottom,
     )
     return subset
 
+def get_nearest_neighbours(atomset, metric, centre, typelist, number):
+    atomlist = []
+    for atom in atomset.menge:
+        if atom.typ in typelist:
+            atomlist.append(atom)
+
+    distancelist = []
+    for atom in atomlist:
+        distancelist.append(float(metric.length(centre - atom.pos)))
+
+    atomlist = [i for (j, i) in sorted(zip(distancelist, atomlist), key=lambda pair: pair[0])]
+    atomlist = atomlist[0:6]
+    return atomlist
+
+
 def auto_octahedron(name, atomset, metric, centre, typelist, 
                facecolor, faceopacity, plotedges, edgecolor, edgewidth):
     assert isinstance(name, str), \
@@ -373,16 +388,7 @@ def auto_octahedron(name, atomset, metric, centre, typelist,
         "The edgewidth of the octahedron must be of type " \
         "float or int."
 
-    atomlist = []
-    for atom in atomset.menge:
-        if atom.typ in typelist:
-            atomlist.append(atom)
-
-    distancelist = []
-    for atom in atomlist:
-        distancelist.append(float(metric.length(centre - atom.pos)))
-
-    atomlist = [i for (j, i) in sorted(zip(distancelist, atomlist), key=lambda pair: pair[0])]
+    atomlist = get_nearest_neighbours(atomset, metric, centre, typelist, 6)
     topatom = atomlist[0]
     atomlist = atomlist[1:6]
     distancelist = []
