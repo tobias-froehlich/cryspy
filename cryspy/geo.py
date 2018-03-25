@@ -249,6 +249,62 @@ class Rec:
         return self.value.liste[0].liste[2]
 
 
+class Axial:
+    def __init__(self, value):
+        assert isinstance(value, nb.Matrix), \
+            "Must be created by an object of type Matrix."
+        assert value.shape() == (1, 4), \
+            "Must be created by a 1x4-Matrix."
+        assert value.liste[0].liste[3] == 0, \
+            "Must be created by a 1x4-Matrix of this shape: \n" \
+            "  < *  *  *  0 > "
+        self.value = value
+
+    def __str__(self):
+        return bp.block([["Axial", self.value.block(0, 1, 0, 3).__str__()], ])
+
+    def __eq__(self, right):
+        if isinstance(right, Axial):
+            return (self.value == right.value)
+        else:
+            return False
+
+    def __hash__(self):
+        string = "axial" + str(hash(self.value))
+        return int(hashlib.sha1(string.encode()).hexdigest(), 16)
+
+    def __add__(self, right):
+        if isinstance(right, Axial):
+            return Axial(self.value + right.value)
+        else:
+            return NotImplemented
+
+    def __sub__(self, right):
+        if isinstance(right, Axial):
+            return Axial(self.value - right.value)
+        else:
+            return NotImplemented
+
+    def __neg__(self):
+        return Axial(-self.value)
+
+    def __mul__(self, right):
+        if isinstance(right, Dif):
+            return (self.value * right.value).liste[0].liste[0]
+        else:
+            return NotImplemented
+
+    def h(self):
+        return self.value.liste[0].liste[0]
+
+    def k(self):
+        return self.value.liste[0].liste[1]
+
+    def l(self):
+        return self.value.liste[0].liste[2]
+
+       
+
 # **** class Operator ****
 # This class is the basic class for the following classes:
 #
@@ -276,6 +332,7 @@ class Operator:
             "   * * * * \n"\
             "   0 0 0 1 \n"
         self.value = value
+        self.determinante = None
 
     def __str__(self):
         return bp.block([["Operator", self.value.__str__()], ])
@@ -289,15 +346,22 @@ class Operator:
     def inv(self):
         return Operator(self.value.inv())
 
-    def __pow__(self, right):
-        if isinstance(right, Pos):
-            return Pos(self.value * right.value)
-        elif isinstance(right, Dif):
-            return Dif(self.value * right.value)
-        elif isinstance(right, Rec):
-            return Rec(right.value * self.value.delete_translation())
+#    def __pow__(self, right):
+#        if isinstance(right, Pos):
+#            return Pos(self.value * right.value)
+#        elif isinstance(right, Dif):
+#            return Dif(self.value * right.value)
+#        elif isinstance(right, Rec):
+#            return Rec(right.value * self.value.delete_translation())
+#        else:
+#            return NotImplemented
+
+    def det(self):
+        if self.determinante == None:
+            self.determinante = self.value.det()
+            return self.determinante
         else:
-            return NotImplemented
+            return self.determinante
 
 
 def linearterm2str(liste_numbers, liste_variables):
@@ -362,6 +426,10 @@ class Symmetry(Operator):
             return Pos(self.value * right.value)
         elif isinstance(right, Dif):
             return Dif(self.value * right.value)
+        elif isinstance(right, Rec):
+            return Rec(right.value * self.value.delete_translation().inv())
+        elif isinstance(right, Axial):
+            return Axial(right.value * self.value.delete_translation().inv() * self.value.det())
         else:
             return NotImplemented
 
@@ -563,6 +631,8 @@ class Transformation(Operator):
                               [self ** coset for coset in right.liste_cosets])
         elif isinstance(right, Rec):
             return Rec(right.value * self.inv().value.delete_translation())
+        elif isinstance(right, Axial):
+            return Axial((right.value * self.inv().value.delete_translation()) * self.value.det())
         else:
             return NotImplemented
 

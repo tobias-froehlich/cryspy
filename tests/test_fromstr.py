@@ -153,6 +153,9 @@ def test_fromstr():
     q = fs("Rec <  1  2  3  > ")
     assert q == geo.Rec(fs("1 2 3 0"))
 
+    a = fs("A 1 2 3")
+    assert a == geo.Axial(fs("1 2 3 0"))
+
 
 def test_typefromstr():
   string = "/ 1 2 \ \\n\ 3 4/"
@@ -190,3 +193,5 @@ def test_typefromstr():
   assert fromstr.typefromstr(string) == geo.Rec
   string = "Q0 0 0"
   assert fromstr.typefromstr(string) == geo.Rec
+  string = "A0 0 0"
+  assert fromstr.typefromstr(string) == geo.Axial

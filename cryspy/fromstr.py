@@ -95,11 +95,20 @@ def fromstr(string):
             raise(Exception("The following string looks like a Rec "
                             "but I cannot convert it: %s" % (string)))
 
+    elif typ == geo.Axial:
+        try:
+            return axialfromstr(string)
+        except ValueError:
+            raise(Exception("The following string looks like an Axia "
+                            "but I cannot convert it: %s" % (string)))
+
 def typefromstr(string):
     words = string.split()
 
     if ('Rec' in string):
         return geo.Rec
+    elif re.findall("A", string) != []:
+        return geo.Axial
     elif re.findall("[abc]|then|O|->", string) != []:
         return geo.Transformation
     elif (words[0][0] == '/') and words[-1][-1] == '/':
@@ -235,17 +244,11 @@ def transformationfromstr(string):
 
 def cosetfromstr(string):
     string = re.sub('[{}]', ' ', string)
-#    string = string.replace('{', ' ')
-#    string = string.replace('}', ' ')
     return geo.Coset(fromstr(string), geo.canonical)
 
 def posfromstr(string):
     string = re.sub('\\\\| \/|\/ |\|', ' ', string)
     string = string.replace('\n', ' ')
-#    string = string.replace('\\', ' ')
-#    string = string.replace('/ ', ' ')
-#    string = string.replace(' /', ' ')
-#    string = string.replace('|', ' ')
     string = removeletters(string)
     words = string.split()
     string = '\n'.join(words)
@@ -255,10 +258,6 @@ def posfromstr(string):
 def diffromstr(string):
     string = string.replace('\n', ' ')
     string = re.sub("\\\\| \/|\/ |\|", " ", string)
-#    string = string.replace('\\', ' ')
-#    string = string.replace('/ ', ' ')
-#    string = string.replace(' /', ' ')
-#    string = string.replace('|', ' ')
     string = removeletters(string)
     words = string.split()
     string = '\n'.join(words)
@@ -268,14 +267,19 @@ def diffromstr(string):
 def recfromstr(string):
     string = string.replace('\n', ' ')
     string = re.sub("\\\\| \/|\/ |[|<>]", " ", string)
-#    string = string.replace('\\', ' ')
-#    string = string.replace('/ ', ' ')
-#    string = string.replace(' /', ' ')
-#    string = string.replace('|', ' ')
-#    string = string.replace('<', ' ')
-#    string = string.replace('>', ' ')
     string = removeletters(string)
     words = string.split()
     string = ' '.join(words)
     string += " 0"
     return geo.Rec(matrixfromstr(string))
+
+def axialfromstr(string):
+    string = string.replace('\n', ' ')
+    string = re.sub("\\\\| \/|\/ |[|<>]", " ", string)
+    string = removeletters(string)
+    words = string.split()
+    string = ' '.join(words)
+    string += " 0"
+    return geo.Axial(matrixfromstr(string))
+
+

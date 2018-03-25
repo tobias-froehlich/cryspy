@@ -46,6 +46,13 @@ def test_Rec():
     assert hash(x) == hash(y)
 
 
+def test_Axial():
+    a = geo.Axial(nb.Matrix([[1, 2, 3, 0]]))
+    assert a.__str__() == "Axial <  1  2  3  > "
+    x = geo.Axial(nb.Matrix([[0, 0, 1.000000000, 0]]))
+    y = geo.Axial(nb.Matrix([[0, 0, 0.999999999, 0]]))
+    assert hash(x) == hash(y)
+
 def test_eq():
     r1 = geo.Pos(nb.Matrix([[1], [2], [3], [1]]))
     r2 = geo.Pos(nb.Matrix([[1], [2], [3], [1]]))
@@ -56,6 +63,9 @@ def test_eq():
     q1 = geo.Rec(nb.Matrix([[1, 2, 3, 0]]))
     q2 = geo.Rec(nb.Matrix([[1, 2, 3, 0]]))
     q3 = geo.Rec(nb.Matrix([[2, 3, 4, 0]]))
+    a1 = geo.Axial(nb.Matrix([[1, 2, 3, 0]]))
+    a2 = geo.Axial(nb.Matrix([[1, 2, 3, 0]]))
+    a3 = geo.Axial(nb.Matrix([[1, 2, 4, 0]]))
     assert not (r1 == d1)
     assert     (r1 == r1)
     assert     (r1 == r2)
@@ -68,6 +78,9 @@ def test_eq():
     assert     (q1 == q1)
     assert     (q1 == q2)
     assert not (q1 == q3)
+    assert     (a1 == a1)
+    assert     (a1 == a2)
+    assert not (a1 == a3)
 
 
 def test_add_and_sub():
@@ -86,7 +99,11 @@ def test_add_and_sub():
     assert (q1 - q2) == geo.Rec(nb.Matrix([[-3, -3, -3, 0]]))
     assert -d1 == geo.Dif(nb.Matrix([[-4], [-5], [-6], [0]]))
     assert -q1 == geo.Rec(nb.Matrix([[-1, -2, -3, 0]]))
-
+    a1 = geo.Axial(nb.Matrix([[1, 2, 3, 0]]))
+    a2 = geo.Axial(nb.Matrix([[4, 5, 6, 0]]))
+    assert (a1 + a2) == geo.Axial(nb.Matrix([[5, 7, 9, 0]]))
+    assert (a1 - a2) == geo.Axial(nb.Matrix([[-3, -3, -3, 0]]))
+    assert -a1 == geo.Axial(nb.Matrix([[-1, -2, -3, 0]]))
 
 def test_Skalarprodukt():
     d1 = geo.Dif(nb.Matrix([[1], [2], [3], [0]]))
@@ -114,10 +131,12 @@ def test_Operator():
     assert g == g1
 
     g = geo.Operator(fs("-1 0 0 0 \n 0 1 0 0 \n 0 0 1 1/2 \n 0 0 0 1"))
-    assert g ** fs("p 1/2 1/2 1/2") == fs("p -1/2 1/2 1")
-    assert g ** fs("d 1/2 1/2 1/2") == fs("d -1/2 1/2 1/2")
-    assert g ** fs("q 1/2 1/2 1/2") == fs("q -1/2 1/2 1/2")
+#    assert g ** fs("p 1/2 1/2 1/2") == fs("p -1/2 1/2 1")
+#    assert g ** fs("d 1/2 1/2 1/2") == fs("d -1/2 1/2 1/2")
+#    assert g ** fs("q 1/2 1/2 1/2") == fs("q -1/2 1/2 1/2")
 
+
+    assert g.det() == -1
 
 def test_Symmetry():
     g = geo.Symmetry(nb.Matrix([[1,  0, 2, -1],
@@ -133,13 +152,31 @@ def test_Symmetry():
                                 [1, -1,  0, 0],
                                 [0,  0,  1, 0],
                                 [0,  0,  0, 1]]))
-    print(g)
     assert g.__str__() == "-y,x-y,z"
     x = uc.ufloat(0.4, 0.1)
     p = geo.Pos(nb.Matrix([[x], [x], [0], [1]]))
-    print(p)
-    print((g*g*g)**p)
     assert (g*g*g)**p == p
+
+
+    g = geo.Symmetry(fs("-1 0 0 0 \n 0 1 0 0 \n 0 0 1 1/2 \n 0 0 0 1"))
+    assert g ** fs("p 1/2 1/2 1/2") == fs("p -1/2 1/2 1")
+    assert g ** fs("d 1/2 1/2 1/2") == fs("d -1/2 1/2 1/2")
+    assert g ** fs("q 1/2 1/2 1/2") == fs("q -1/2 1/2 1/2")
+
+    g = geo.Symmetry(fs("-1 0 0 0 \n 0 2 0 0 \n 0 0 1 1/2 \n 0 0 0 1"))
+    assert g ** fs("p 1/2 1/2 1/2") == fs("p -1/2 1 1")
+    assert g ** fs("d 1/2 1/2 1/2") == fs("d -1/2 1 1/2")
+    assert g ** fs("q 1/2 1/2 1/2") == fs("q -1/2 1/4 1/2")
+
+    g = geo.Symmetry(fs("-1 0 0 0 \n 0 1 0 0 \n 0 0 1 0 \n 0 0 0 1"))
+    assert g ** fs("A 1/2 0 0") == fs("A 1/2 0 0")
+    assert g ** fs("A 0 1/2 0") == fs("A 0 -1/2 0")
+    assert g ** fs("A 0 0 1/2") == fs("A 0 0 -1/2")
+
+    g = geo.Symmetry(fs("-1 0 0 0 \n 0 2 0 0 \n 0 0 1 0 \n 0 0 0 1"))
+    assert g ** fs("A 1/2 0 0") == fs("A 1 0 0")
+    assert g ** fs("A 0 1/2 0") == fs("A 0 -1/2 0")
+    assert g ** fs("A 0 0 1/2") == fs("A 0 0 -1")
 
 
 def test_Pointgroup():
@@ -254,8 +291,6 @@ def test_Pointgroup():
     G1 = geo.Pointgroup([g[6], g[7], g[0], g[14], g[15], g[9], g[10], g[11],
                          g[12], g[13], g[8], g[1], g[2], g[3], g[4], g[5]])
 
-    print(G1.sort())
-    print(G)
     assert G1.sort() == G
 
     H = geo.Pointgroup([geo.Symmetry(nb.Matrix([[1, 0, 0, 0],
@@ -303,7 +338,6 @@ def test_Transformation():
                                        [0, 0, 1, 0],
                                        [0, 0, 0, 1]]))
 
-    print(t1)
     assert t1.__str__() == "Transformation O -> (0, 0, 0)\n" \
                            "               then\n" \
                            "               a' = b\n" \
@@ -336,7 +370,6 @@ def test_Transformation():
                                        [0, 1, 0, 0],
                                        [0, 0, 1, 0],
                                        [0, 0, 0, 1]]))
-    print(t3.value)
     assert t3.__str__() == "Transformation O -> (0, 0, 0)\n" \
                            "               then\n" \
                            "               a' = 1.0a\n" \
@@ -397,10 +430,16 @@ def test_Transformation():
                            "               k' = 1/2l\n" \
                            "               l' = -k"
     assert isinstance(t ** q1, geo.Rec)
-    print(t)
     assert (t ** q1) == \
         geo.Rec(nb.Matrix([[0, nb.Mixed(fr.Fraction(1, 2)), 0, 0]]))
 
+    t = geo.Transformation(nb.Matrix([[-1, 0, 0, 0],
+                                     [ 0, fs("1/2"), 0, 0],
+                                     [ 0, 0, 1, 0],
+                                     [ 0, 0, 0, 1]]))
+    assert t ** fs("A 1/2 0 0") == fs("A 1/4 0 0")
+    assert t ** fs("A 0 1/2 0") == fs("A 0 -1/2 0")
+    assert t ** fs("A 0 0 1/2") == fs("A 0 0 -1/4")
 
 def test_Metric():
     M = nb.Matrix([[1, 0, 0, 0],
@@ -487,7 +526,6 @@ def test_Metric():
     assert np.abs(metric.cellvolume().value.n - 425.24239) < 0.0001
 
     metric = geo.Cellparameters(fs("1.0(1)"), 1, 1, 90, 90, 90).to_Metric()
-    print(metric.cellvolume())
     assert np.abs(metric.cellvolume().value.n - 1) < 0.00000001
     assert np.abs(metric.cellvolume().value.s - 0.1) < 0.00000001
 
