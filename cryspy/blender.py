@@ -64,22 +64,44 @@ def make_blender_script(atomset, metric, structurename, outfilename):
     t = metric.schmidttransformation
 
     pos = fs("p 1 0 0")
-    x = float((t ** pos).x())
-    y = float((t ** pos).y())
-    z = float((t ** pos).z())
-    outstr += add_axis(structurename, 'XAxis', x, y, z)
+    xa = float((t ** pos).x())
+    ya = float((t ** pos).y())
+    za = float((t ** pos).z())
+    outstr += add_axis(structurename, 'XAxis', xa, ya, za)
 
     pos = fs("p 0 1 0")
-    x = float((t ** pos).x())
-    y = float((t ** pos).y())
-    z = float((t ** pos).z())
-    outstr += add_axis(structurename, 'YAxis', x, y, z)
+    xb = float((t ** pos).x())
+    yb = float((t ** pos).y())
+    zb = float((t ** pos).z())
+    outstr += add_axis(structurename, 'YAxis', xb, yb, zb)
 
     pos = fs("p 0 0 1")
-    x = float((t ** pos).x())
-    y = float((t ** pos).y())
-    z = float((t ** pos).z())
-    outstr += add_axis(structurename, 'ZAxis', x, y, z)
+    xc = float((t ** pos).x())
+    yc = float((t ** pos).y())
+    zc = float((t ** pos).z())
+    outstr += add_axis(structurename, 'ZAxis', xc, yc, zc)
+
+    # Calculate the reciprocal basis ...
+    v = float(metric.cellvolume())
+    xa_ = (yb*zc - yc*zb) / v
+    ya_ = (zb*xc - zc*xb) / v
+    za_ = (xb*yc - xc*yb) / v
+    xb_ = (yc*za - ya*zc) / v
+    yb_ = (zc*xa - za*xc) / v
+    zb_ = (xc*ya - xa*yc) / v
+    xc_ = (ya*zb - yb*za) / v
+    yc_ = (za*xb - zb*xa) / v
+    zc_ = (xa*yb - xb*ya) / v
+    # ... and the areas:
+    Abc = 1/float(metric.length(fs("q 1 0 0")))
+    Aca = 1/float(metric.length(fs("q 0 1 0")))
+    Aab = 1/float(metric.length(fs("q 0 0 1")))
+    reciprocal_coordinates = (
+        xa_, ya_, za_,
+        xb_, yb_, zb_,
+        xc_, yc_, zc_,
+        Abc, Aca, Aab
+    )
 
     # Create empty mesh for the positions of the atoms
     outstr += "bpy.ops.mesh.primitive_cube_add(location=(0,0,0))\n"
@@ -89,13 +111,13 @@ def make_blender_script(atomset, metric, structurename, outfilename):
     outstr += "posobject = bpy.context.object\n"
     outstr += "posobject.name = '%s.Positions'\n" % (structurename)
 
-    outstr += draw_atomset_or_subset(structurename, atomset, t)
+    outstr += draw_atomset_or_subset(structurename, atomset, t, reciprocal_coordinates)
 
     outfile = open(outfilename, "w")
     outfile.write(outstr)
     outfile.close()
 
-def draw_atomset_or_subset(structurename, atomset, t):
+def draw_atomset_or_subset(structurename, atomset, t, reciprocal_coordinates):
     outstr = ""
     # Inspect atomset for different kinds of object and sort them into different lists
     typs = []
@@ -158,6 +180,10 @@ def draw_atomset_or_subset(structurename, atomset, t):
 
     # Create arrows for the momentums:
     momentumindex = 0
+    (xa_, ya_, za_,
+     xb_, yb_, zb_,
+     xc_, yc_, zc_,
+     Abc, Aca, Aab) = reciprocal_coordinates
     for momentum in momentumlist:
         momentumindex += 1
         momentumname = "Momentum%03i" % (momentumindex)
@@ -173,17 +199,21 @@ def draw_atomset_or_subset(structurename, atomset, t):
         x0 = float((t ** momentum.pos).x())
         y0 = float((t ** momentum.pos).y())
         z0 = float((t ** momentum.pos).z())
-        dx = float((t ** momentum.direction).x())
-        dy = float((t ** momentum.direction).y())
-        dz = float((t ** momentum.direction).z())
 
-        length = np.sqrt(dx * dx + dy * dy + dz * dz)
-        x1 = x0 - dx * plotlength / length
-        y1 = y0 - dy * plotlength / length
-        z1 = z0 - dz * plotlength / length
-        x2 = x0 + dx * plotlength / length
-        y2 = y0 + dy * plotlength / length
-        z2 = z0 + dz * plotlength / length
+        h = float(momentum.axial.h())
+        k = float(momentum.axial.k())
+        l = float(momentum.axial.l())
+
+        dx = float(h * xa_ + k * xb_ + l * xc_) * Abc * 0.5
+        dy = float(h * ya_ + k * yb_ + l * yc_) * Aca * 0.5
+        dz = float(h * za_ + k * zb_ + l * zc_) * Aab * 0.5
+
+        x1 = x0 - dx 
+        y1 = y0 - dy 
+        z1 = z0 - dz 
+        x2 = x0 + dx 
+        y2 = y0 + dy 
+        z2 = z0 + dz 
 
         outstr += add_momentum(structurename, momentumname,
                                x1, y1, z1, x2, y2, z2, color)
