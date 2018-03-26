@@ -67,7 +67,7 @@ def test_Atom():
 
 
 def test_Momentum():
-    m = cr.Momentum("M", fs("p 0 0 0"), fs("d 0 0 1"))
+    m = cr.Momentum("M", fs("p 0 0 0"), fs("A 0 0 1"))
     assert isinstance(m, cr.Momentum)
     m.set_color((0, 0, 1))
     m.set_color((fs("0.3"), 0.1, 1))
@@ -75,21 +75,23 @@ def test_Momentum():
     m.set_plotlength(0.5)
     m.set_plotlength(fs("1/2"))
     d = fs("d 0 0 1/2")
-    m1 = cr.Momentum("M", fs("p 0 0 0"), fs("d 0 0 1"))
-    m2 = cr.Momentum("M", fs("p 1 2 3"), fs("d 0 0 1"))
-    m3 = cr.Momentum("M", fs("p 0 0 0"), fs("d 1 2 3"))
+    m1 = cr.Momentum("M", fs("p 0 0 0"), fs("A 0 0 1"))
+    m2 = cr.Momentum("M", fs("p 1 2 3"), fs("A 0 0 1"))
+    m3 = cr.Momentum("M", fs("p 0 0 0"), fs("A 1 2 3"))
     assert m == m1
     assert hash(m) == hash(m1)
     assert (m == m2) == False
     assert (m == m3) == False
-    assert m + d == cr.Momentum("M", fs("p 0 0 1/2"), fs("d 0 0 1"))
-    assert fs("x+1/2,y,z") ** m == cr.Momentum("M", fs("p 1/2 0 0"), fs("d 0 0 1"))
-    assert fs("{x+3/2,y,z}") ** m == cr.Momentum("M", fs("p 1/2 0 0"), fs("d 0 0 1"))
-    m1 = cr.Momentum("M", fs("p 0 0 1/2"), fs("d 0 0 1"))
+    assert m + d == cr.Momentum("M", fs("p 0 0 1/2"), fs("A 0 0 1"))
+    assert fs("x+1/2,y,z") ** m == cr.Momentum("M", fs("p 1/2 0 0"), fs("A 0 0 1"))
+    assert fs("{x+3/2,y,z}") ** m == cr.Momentum("M", fs("p 1/2 0 0"), fs("A 0 0 1"))
+    assert fs("-x+3/2,y,z") ** m == cr.Momentum("M", fs("p 3/2 0 0"), fs("A 0 0 -1"))
+    assert fs("{x+3/2,-y,z}") ** m == cr.Momentum("M", fs("p 1/2 0 0"), fs("A 0 0 -1"))
+    m1 = cr.Momentum("M", fs("p 0 0 1/2"), fs("A 0 0 1"))
     assert (m1 + "test").name == "Mtest"
 
-    m1 = cr.Momentum("M", fs("p 1 0 1/2"), fs("d 0 0 1"))
-    assert (m1 % geo.canonical) == cr.Momentum("M", fs("p 0 0 1/2"), fs("d 0 0 1"))
+    m1 = cr.Momentum("M", fs("p 1 0 1/2"), fs("A 0 0 1"))
+    assert (m1 % geo.canonical) == cr.Momentum("M", fs("p 0 0 1/2"), fs("A 0 0 1"))
 
 
 def test_Bond():
@@ -220,7 +222,7 @@ def test_Atomset():
     atom1 = cr.Atom("Cs1", "Cs", fs("p 0.0000 0 0"))
     atom1a = cr.Atom("Cs1", "Cs", fs("p 0.00000001 0 0"))
     atom2 = cr.Atom("Cs2", "Cs", fs("p 1/4 1/4 0"))
-    momentum = cr.Momentum("M", fs("p 0 0 0"), fs("d 0 0 1"))
+    momentum = cr.Momentum("M", fs("p 0 0 0"), fs("A 0 0 1"))
     bond = cr.Bond("B", fs("p 0 0 0"), fs("p 1/2 1/2 1/2"))
     face = cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")])
     assert hash(atom1) == hash(atom1a)
@@ -249,16 +251,17 @@ def test_Atomset():
     atomset1 = transformation**atomset
     atomset2 = cr.Atomset({cr.Atom("Cs1", "Cs", fs("p 0.00000001 -0.00000001 -1/4")), \
                            cr.Atom("Cs2", "Cs", fs("p 1/4 0 -1/4")), \
-                           cr.Momentum("M", fs("p 0 0 -1/4"), fs("d 0 0 1")), \
+                           cr.Momentum("M", fs("p 0 0 -1/4"), fs("A 0 0 1")), \
                            cr.Bond("B", fs("p 0 0 -1/4"), fs("p 1/2 0 1/4")), \
                            cr.Face("F", [fs("p 0 0 -1/4"), fs("p 1 -1 -1/4"), fs("p 0 1 -1/4")])})
     assert (transformation ** bond) == cr.Bond("B", fs("p 0 0 -1/4"), fs("p 1/2 0 1/4"))
     assert (transformation ** face) == cr.Face("F", [fs("p 0 0 -1/4"), fs("p 1 -1 -1/4"), fs("p 0 1 -1/4")])
+    print(transformation ** momentum)
     assert atomset1 == atomset2
 
     atom1 = cr.Atom("Cs1", "Cs", fs("p 0 0 0"))
     atom2 = cr.Atom("Cs2", "Cs", fs("p 1/4 1/4 0"))
-    momentum = cr.Momentum("M", fs("p 0 0 0"), fs("d 0 0 1"))
+    momentum = cr.Momentum("M", fs("p 0 0 0"), fs("A 0 0 1"))
     bond = cr.Bond("B", fs("p 0 0 0"), fs("p 1/2 1/2 1/2"))
     face = cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")])
     atomset = cr.Atomset({atom1, atom2, momentum, bond, face})

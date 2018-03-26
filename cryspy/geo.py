@@ -616,8 +616,8 @@ class Transformation(Operator):
                             self ** right.liste[1],
                             self ** right.liste[2])
         elif isinstance(right, Pos):
-            print(self.value)
-            print(right.value)
+#            print(self.value)
+#            print(right.value)
             return Pos(self.value * right.value)
         elif isinstance(right, Dif):
             return Dif(self.value * right.value)
@@ -911,8 +911,19 @@ class Coset():
             "Argument of geo.Coset.coset_representant_for_pos(...) must " \
             "be of type geo.Pos."
         is_position = self.symmetry ** pos
-        should_be_position = is_position % self.transgen
-        return (should_be_position - is_position).to_Symmetry() * self.symmetry
+        is_position = self.transgen.transformationinv ** is_position
+        is_x = is_position.x()
+        is_y = is_position.y()
+        is_z = is_position.z()
+        should_be_x = is_x % 1
+        should_be_y = is_y % 1
+        should_be_z = is_z % 1
+        dx = int(round(float(should_be_x - is_x))) 
+        dy = int(round(float(should_be_y - is_y))) 
+        dz = int(round(float(should_be_z - is_z))) 
+        difference = Dif(nb.Matrix([[dx], [dy], [dz], [0]]))
+        difference = self.transgen.transformation ** difference
+        return difference.to_Symmetry() * self.symmetry
 
 
     def __pow__(self, right):
@@ -920,6 +931,10 @@ class Coset():
             return (self.symmetry ** right) % self.transgen
         elif isinstance(right, Dif):
             return(self.symmetry ** right) % self.transgen
+        elif isinstance(right, Rec):
+            return self.symmetry ** right
+        elif isinstance(right, Axial):
+            return self.symmetry ** right
         else:
             return NotImplemented
 

@@ -82,15 +82,18 @@ class Atom(Drawable):
 
 
 class Momentum(Drawable):
-    def __init__(self, name, pos, direction):
+    def __init__(self, name, pos, axial):
+        assert isinstance(name, str), \
+            "First argument of crystal.Momentum(name, pos, axial) must be "\
+            "of type str ."
         assert isinstance(pos, geo.Pos), \
-            "First argument of crystal.Momentum(pos, dir) must be of type " \
-            " geo.Pos ."
-        assert isinstance(direction, geo.Dif), \
-            "Second argument of crystal.Momentum(pos, dir) must be of type" \
-            " geo.Dif ."
+            "Second argument of crystal.Momentum(name, pos, dir) must be "\
+            "of type geo.Pos ."
+        assert isinstance(axial, geo.Axial), \
+            "Third argument of crystal.Momentum(name, pos, dir) must be "\
+            "of type geo.Axial ."
         Drawable.__init__(self, name, pos)
-        self.direction = direction
+        self.axial = axial
         self.has_plotlength = False
         self.plotlength = None
 
@@ -107,7 +110,7 @@ class Momentum(Drawable):
 
     def __eq__(self, right):
         if isinstance(right, Momentum):
-            if (self.pos == right.pos) and (self.direction == right.direction):
+            if (self.pos == right.pos) and (self.axial == right.axial):
                 return True
             else:
                 return False
@@ -116,21 +119,21 @@ class Momentum(Drawable):
 
     def __add__(self, right):
         if isinstance(right, geo.Dif):
-            result = Momentum(self.name, self.pos + right, self.direction)
+            result = Momentum(self.name, self.pos + right, self.axial)
             if self.has_color:
                 result.set_color(self.color)
             if self.has_plotlength:
                 result.set_plotlength(self.plotlength)
             return result
         elif isinstance(right, str):
-            return Momentum(self.name + right, self.pos, self.direction)
+            return Momentum(self.name + right, self.pos, self.axial)
         else:
             return NotImplemented
 
     def __rpow__(self, left):
         if isinstance(left, geo.Operator) \
             or isinstance(left, geo.Coset):
-            result = Momentum(self.name, left ** self.pos, self.direction)
+            result = Momentum(self.name, left ** self.pos, left ** self.axial)
             if self.has_color:
                 result.set_color(self.color)
             if self.has_plotlength:
@@ -143,12 +146,12 @@ class Momentum(Drawable):
         assert isinstance(right, geo.Transgen), \
             "I cannot take an object of type Atom " \
             "modulo an object of type %s" % (type(right))
-        return Momentum(self.name, self.pos % right, self.direction)
+        return Momentum(self.name, self.pos % right, self.axial)
 
 
     def __hash__(self):
         string = "momentum%i,%i" \
-            % (hash(self.pos), hash(self.direction))
+            % (hash(self.pos), hash(self.axial))
         return int(hashlib.sha1(string.encode()).hexdigest(), 16)
 
 

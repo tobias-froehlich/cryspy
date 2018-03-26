@@ -570,20 +570,23 @@ def test_Coset():
         "     0  0  2  "
     c = geo.Coset(g, geo.canonical)
     assert c.__str__() == "{x+2z,-2y,z}"
-    g = geo.Symmetry(nb.Matrix([[ 1, 0, 0, 0.5],
+    g = geo.Symmetry(nb.Matrix([[ 1, 0, 0, fs("1/2")],
                                 [ 0, 1, 0, 0],
                                 [ 0, 0, 1, 0],
                                 [ 0, 0, 0, 1]]))
     c = geo.Coset(g, geo.canonical)
-    g2 = geo.Symmetry(nb.Matrix([[ 1, 0, 0, -0.5],
+    g2 = geo.Symmetry(nb.Matrix([[ 1, 0, 0, fs("-1/2")],
                                  [ 0, 1, 0, 0],
                                  [ 0, 0, 1, 0],
                                  [ 0, 0, 0, 1]]))
     p1 = geo.Pos(nb.Matrix([[0.3], [0], [0], [1]]))
     p2 = geo.Pos(nb.Matrix([[0.8], [0], [0], [1]]))
     assert c.coset_representant_for_pos(p1) == g
+    print(c.coset_representant_for_pos(p2))
     assert c.coset_representant_for_pos(p2) == g2
+    assert c ** fs("p 1/2 1/2 1/2") == fs("p 0 1/2 1/2")
 
+    assert c ** fs("A 0 0 1") == fs("A 0 0 1")
 
 def test_Spacegroup():
     transgen = geo.canonical
@@ -773,6 +776,7 @@ def test_operations():
                              geo.Dif(nb.Matrix([[0], [0], [2], [0]])))
     pos1 = geo.Pos(nb.Matrix([[0], [0], [fr.Fraction(3, 2)], [1]]))
     pos1_ = geo.Pos(nb.Matrix([[0], [0], [fr.Fraction(3, 2)], [1]]))
+    print(pos1 % transgen1)
     assert pos1 % transgen1 == pos1_
 
     transgen1 = geo.Transgen(geo.Dif(nb.Matrix([[0], [0], [2], [0]])),
