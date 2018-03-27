@@ -38,6 +38,8 @@
 #
 
 import hashlib
+import quicktions as fr
+import uncertainties as uc
 from cryspy import numbers as nb
 from cryspy import blockprint as bp
 
@@ -289,10 +291,15 @@ class Axial:
         return Axial(-self.value)
 
     def __mul__(self, right):
-        if isinstance(right, Dif):
-            return (self.value * right.value).liste[0].liste[0]
+        if type(right) in [int, float, fr.Fraction, uc.UFloat]:
+            right = nb.Mixed(right)
+        if type(right) == nb.Mixed:
+            return Axial(self.value * right)
         else:
             return NotImplemented
+
+    def __rmul__(self, left):
+        return self * left
 
     def h(self):
         return self.value.liste[0].liste[0]
@@ -332,6 +339,7 @@ class Operator:
             "   * * * * \n"\
             "   0 0 0 1 \n"
         self.value = value
+        self.timeinversion = 1
         self.determinante = None
 
     def __str__(self):
@@ -339,22 +347,13 @@ class Operator:
 
     def __eq__(self, right):
         if isinstance(right, Operator):
-            return (self.value == right.value)
+            return (self.value == right.value) \
+               and (self.timeinversion == right.timeinversion)
         else:
             return False
 
     def inv(self):
         return Operator(self.value.inv())
-
-#    def __pow__(self, right):
-#        if isinstance(right, Pos):
-#            return Pos(self.value * right.value)
-#        elif isinstance(right, Dif):
-#            return Dif(self.value * right.value)
-#        elif isinstance(right, Rec):
-#            return Rec(right.value * self.value.delete_translation())
-#        else:
-#            return NotImplemented
 
     def det(self):
         if self.determinante == None:
@@ -410,6 +409,8 @@ class Symmetry(Operator):
             result += linearterm2str(self.value.liste[i].liste,
                                       ["x", "y", "z", '']) + ','
         result = result[:-1]
+        if self.timeinversion == -1:
+            result = "t " + result
         return result
 
     def inv(self):
@@ -417,7 +418,9 @@ class Symmetry(Operator):
 
     def __mul__(self, right):
         if isinstance(right, Symmetry):
-            return Symmetry(self.value * right.value)
+            result = Symmetry(self.value * right.value)
+            result.timeinversion = self.timeinversion * right.timeinversion
+            return result
         else:
             return NotImplemented
 
@@ -429,7 +432,10 @@ class Symmetry(Operator):
         elif isinstance(right, Rec):
             return Rec(right.value * self.value.delete_translation().inv())
         elif isinstance(right, Axial):
-            return Axial(right.value * self.value.delete_translation().inv() * self.value.det())
+            return self.timeinversion * Axial(
+                right.value * self.value.delete_translation().inv()
+                * self.value.det()
+            )
         else:
             return NotImplemented
 
@@ -632,7 +638,10 @@ class Transformation(Operator):
         elif isinstance(right, Rec):
             return Rec(right.value * self.inv().value.delete_translation())
         elif isinstance(right, Axial):
-            return Axial((right.value * self.inv().value.delete_translation()) * self.value.det())
+            return self.timeinversion * Axial(
+                (right.value * self.inv().value.delete_translation())
+                * self.value.det()
+            )
         else:
             return NotImplemented
 
@@ -654,6 +663,7 @@ class Metric(Operator):
             "     0 0 0 1"
         self.value = value
         self.valueinv = value.inv()
+        self.timeinversion = 1
         self.schmidttransformation = self.calculate_schmidttransformation()
 
     def dot(self, vector1, vector2):

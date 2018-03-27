@@ -52,6 +52,7 @@ def test_Axial():
     x = geo.Axial(nb.Matrix([[0, 0, 1.000000000, 0]]))
     y = geo.Axial(nb.Matrix([[0, 0, 0.999999999, 0]]))
     assert hash(x) == hash(y)
+    assert -1 * fs("A 1 2 3") == fs("A -1 -2 -3")
 
 def test_eq():
     r1 = geo.Pos(nb.Matrix([[1], [2], [3], [1]]))
@@ -130,6 +131,11 @@ def test_Operator():
                           "         \   0   0  0  1  / "
     assert g == g1
 
+    g.timeinversion = -1
+    assert not g == g1
+    g1.timeinversion = -1
+    assert g == g1
+
     g = geo.Operator(fs("-1 0 0 0 \n 0 1 0 0 \n 0 0 1 1/2 \n 0 0 0 1"))
 #    assert g ** fs("p 1/2 1/2 1/2") == fs("p -1/2 1/2 1")
 #    assert g ** fs("d 1/2 1/2 1/2") == fs("d -1/2 1/2 1/2")
@@ -144,6 +150,14 @@ def test_Symmetry():
                                 [0,  0, 1,  fr.Fraction(1, 3)],
                                 [0,  0, 0,  1]]))
     assert g.__str__() == "x+2z-1,-2y,z+1/3"
+
+    g1 = geo.Symmetry(nb.Matrix([[1,  0, 2, -1],
+                                [0, -2, 0,  0],
+                                [0,  0, 1,  fr.Fraction(1, 3)],
+                                [0,  0, 0,  1]]))
+    g1.timeinversion = -1
+    assert g1.__str__() == "t x+2z-1,-2y,z+1/3"
+    assert g*g == g1*g1
 
     assert isinstance(g.inv(), geo.Symmetry)
     assert g * g.inv() == geo.Symmetry(nb.Matrix.onematrix(4))
@@ -178,6 +192,8 @@ def test_Symmetry():
     assert g ** fs("A 0 1/2 0") == fs("A 0 -1/2 0")
     assert g ** fs("A 0 0 1/2") == fs("A 0 0 -1")
 
+    g.timeinversion = -1
+    assert g ** fs("A 1/2 0 0") == fs("A -1 0 0")
 
 def test_Pointgroup():
     pg = geo.Pointgroup([geo.Symmetry(nb.Matrix([[1, 0, 0, 0],

@@ -52,6 +52,11 @@ def test_fromstr():
                                 " -1 1 0 1/3 \n"
                                 "  0 0 2 0 \n"
                                 "  0 0 0 1"))
+    string = "t x+y, y - x + 1/3, 2z"
+    g1 = fs(string)
+    g.timeinversion = -1
+    assert g == g1
+
     string = "O->(0,0,0)\n" \
              "then\n" \
              "a' = a-b \n" \

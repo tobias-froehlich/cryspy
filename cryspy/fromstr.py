@@ -170,6 +170,11 @@ def matrixfromstr(string):
     return nb.Matrix(rowliste)
 
 def symmetryfromstr(string):
+    if string.count('t') % 2 == 0:
+        timeinversion = 1
+    else:
+        timeinversion = -1
+    string = string.replace('t', '')
     words = string.split(',')
     assert len(words) == 3, \
         "The following string looks like a Symmetry, but it has not "\
@@ -180,7 +185,9 @@ def symmetryfromstr(string):
         liste.append(row)
     liste.append(nb.Row([fromstr("0"), fromstr("0"), fromstr("0"),
                          fromstr("1")]))
-    return geo.Symmetry(nb.Matrix(liste))
+    g = geo.Symmetry(nb.Matrix(liste))
+    g.timeinversion = timeinversion
+    return g
 
 def transformationfromstr(string):
     if len(string.split("then")) > 1:
