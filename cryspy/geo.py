@@ -414,7 +414,9 @@ class Symmetry(Operator):
         return result
 
     def inv(self):
-        return Symmetry(self.value.inv())
+        result = Symmetry(self.value.inv())
+        result.timeinversion = self.timeinversion
+        return result
 
     def __mul__(self, right):
         if isinstance(right, Symmetry):
@@ -846,7 +848,9 @@ class Transgen():
             result.value.liste[0].liste[3] %= 1
             result.value.liste[1].liste[3] %= 1
             result.value.liste[2].liste[3] %= 1
-            return self.transformation ** result
+            result = self.transformation ** result
+            result.timeinversion = left.timeinversion
+            return result
         elif isinstance(left, Coset):
             if left.transgen == self:
                 return Coset(left.symmetry % self, self)

@@ -158,6 +158,10 @@ def test_Symmetry():
     g1.timeinversion = -1
     assert g1.__str__() == "t x+2z-1,-2y,z+1/3"
     assert g*g == g1*g1
+    assert g1.inv() * g1 == fs("x,y,z")
+
+    g1 = fs("t x+1/2,-y,z")
+    assert g1 % geo.canonical == g1
 
     assert isinstance(g.inv(), geo.Symmetry)
     assert g * g.inv() == geo.Symmetry(nb.Matrix.onematrix(4))
@@ -194,6 +198,7 @@ def test_Symmetry():
 
     g.timeinversion = -1
     assert g ** fs("A 1/2 0 0") == fs("A -1 0 0")
+    assert fs("t x, y, z") ** fs("A 1 0 0") == fs("A -1 0 0")
 
 def test_Pointgroup():
     pg = geo.Pointgroup([geo.Symmetry(nb.Matrix([[1, 0, 0, 0],
@@ -603,6 +608,7 @@ def test_Coset():
     assert c ** fs("p 1/2 1/2 1/2") == fs("p 0 1/2 1/2")
 
     assert c ** fs("A 0 0 1") == fs("A 0 0 1")
+    assert fs("{t x, y, z}") ** fs("A 1 0 0") == fs("A -1 0 0")
 
 def test_Spacegroup():
     transgen = geo.canonical

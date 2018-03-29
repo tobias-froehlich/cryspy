@@ -57,6 +57,12 @@ def test_fromstr():
     g.timeinversion = -1
     assert g == g1
 
+    g1 = fs("t x,y,z")
+    assert g1.timeinversion == -1
+
+    g1 = fs("{t x,y,z}")
+    assert g1.symmetry.timeinversion == -1
+
     string = "O->(0,0,0)\n" \
              "then\n" \
              "a' = a-b \n" \

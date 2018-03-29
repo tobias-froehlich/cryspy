@@ -2,6 +2,7 @@ import hashlib
 import numpy as np
 from cryspy import numbers as nb
 from cryspy import geo as geo
+from cryspy.fromstr import fromstr as fs
 from cryspy import blockprint as bp
 from cryspy import tables
 
@@ -81,8 +82,10 @@ class Atom(Drawable):
         return int(hashlib.sha1(string.encode()).hexdigest(), 16)
 
 
+nullaxial = fs("A 0 0 0")
+nullrec = fs("q 0 0 0")
 class Momentum(Drawable):
-    def __init__(self, name, pos, axial):
+    def __init__(self, name, pos, axial, axial_imag=nullaxial, propagation=nullrec):
         assert isinstance(name, str), \
             "First argument of crystal.Momentum(name, pos, axial) must be "\
             "of type str ."
@@ -92,8 +95,19 @@ class Momentum(Drawable):
         assert isinstance(axial, geo.Axial), \
             "Third argument of crystal.Momentum(name, pos, dir) must be "\
             "of type geo.Axial ."
+        assert isinstance(axial_imag, geo.Axial), \
+            "Argument axial_imag of "\
+            "crystal.Momentum(name, pos, dir, axial_imag=axial_imag)" \
+            "must be of type geo.Axial."
+        assert isinstance(propagation, geo.Rec), \
+            "Argument propagation of "\
+            "crystal.Momentum(name, pos, dir, propagation=propagation)" \
+            "must be of type geo.Rec."
+            
         Drawable.__init__(self, name, pos)
         self.axial = axial
+        self.axial_imag = axial_imag
+        self.propagation = propagation
         self.has_plotlength = False
         self.plotlength = None
 
@@ -104,9 +118,13 @@ class Momentum(Drawable):
             "be of type float or int or numbers.Mixed."
         self.has_plotlength = True
         self.plotlength = float(plotlength)
-
+  
     def __str__(self):
-        return "Momentum"
+        return bp.block([["Momentum", " " + self.name,
+                          " " + self.pos.__str__()],
+                          [" ", " ", self.axial.__str__()],
+                          [" ", " ", self.axial_imag.__str__()],
+                          [" ", " ", self.propagation.__str__()], ])
 
     def __eq__(self, right):
         if isinstance(right, Momentum):
@@ -131,14 +149,38 @@ class Momentum(Drawable):
             return NotImplemented
 
     def __rpow__(self, left):
-        if isinstance(left, geo.Operator) \
+        if isinstance(left, geo.Symmetry) \
             or isinstance(left, geo.Coset):
-            result = Momentum(self.name, left ** self.pos, left ** self.axial)
+            pos_new = left ** self.pos
+            axial_new = left ** self.axial
+            axial_imag_new = left ** self.axial_imag
+            propagation_new = left ** self.propagation
+            phi = 360 * (self.propagation*(pos_new - self.pos))
+            sin = nb.dsin(phi)
+            cos = nb.dcos(phi)
+            result = Momentum(
+                self.name,
+                pos_new,
+                axial_new * cos - axial_imag_new * sin, 
+                axial_imag=axial_imag_new * cos + axial_new * sin,
+                propagation=propagation_new)
             if self.has_color:
                 result.set_color(self.color)
             if self.has_plotlength:
                 result.set_plotlength(self.plotlength)
             return result
+        elif isinstance(left, geo.Transformation):
+            result = Momentum(
+                self.name,
+                left ** self.pos,
+                left ** self.axial, 
+                axial_imag=left ** self.axial_imag,
+                propagation=left ** self.propagation)
+            if self.has_color:
+                result.set_color(self.color)
+            if self.has_plotlength:
+                result.set_plotlength(self.plotlength)
+            return result 
         else:
             return NotImplemented
 

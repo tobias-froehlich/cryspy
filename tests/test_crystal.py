@@ -93,6 +93,32 @@ def test_Momentum():
     m1 = cr.Momentum("M", fs("p 1 0 1/2"), fs("A 0 0 1"))
     assert (m1 % geo.canonical) == cr.Momentum("M", fs("p 0 0 1/2"), fs("A 0 0 1"))
 
+    m = cr.Momentum("M", fs("p 1 0 1/2"), fs("A 0 0 1"), axial_imag=fs("A 0 1 0"))
+    m1 = cr.Momentum("M", fs("p -1 0 1/2"), fs("A 0 0 -1"), axial_imag=fs("A 0 -1 0"))
+    assert fs("-x,y,z") ** m == m1
+
+    m = cr.Momentum("M", fs("p 0 0 0"), fs("A 1 0 0"),
+        axial_imag=fs("A 0 1 0"), propagation=fs("q 0 0 1/2"))
+    m1 = cr.Momentum("M", fs("p 0 0 1"), fs("A -1 0 0"),
+        axial_imag=fs("A 0 -1 0"), propagation=fs("q 0 0 1/2"))
+    assert fs("x,y,z+1") ** m == m1
+    assert fs("{x,y,z+1}") ** m == m
+    m = cr.Momentum("M", fs("p 0 0 0"), fs("A 1 0 0"),
+        axial_imag=fs("A 0 1 0"), propagation=fs("q 0 0 0.5"))
+    m1 = cr.Momentum("M", fs("p 0 0 1"), fs("A -1.0 0.0 0"),
+        axial_imag=fs("A 0.0 -1.0 0"), propagation=fs("q 0 0 0.5"))
+    my_m = fs("-x,-y,z+1/2") ** (fs("-x,-y,z+1/2") ** m)
+    assert hash(my_m) == hash(m1)
+    m = cr.Momentum("M", fs("p 0 0 0"), fs("A 1 0 0"),
+        axial_imag=fs("A 0 1 0"), propagation=fs("q 0 0 0.5(1)"))
+    m1 = fs("x, y, z+1") ** m
+    my_m = fs("-x,-y,z+1/2") ** (fs("-x,-y,z+1/2") ** m)
+    assert hash(my_m) == hash(m1)
+    m1 = cr.Momentum("M", fs("p 0 0 0"), fs("A 1 0 0"))
+    m2 = cr.Momentum("M", fs("p 0 0 0"), fs("A -1 0 0"))
+    assert fs("t x,y,z") ** m1 == m2
+    assert fs("{t x,y,z}") ** m1 == m2
+
 
 def test_Bond():
     b = cr.Bond("B", fs("p 0 0 0"), fs("p 0 0 1/2"))
@@ -229,20 +255,24 @@ def test_Atomset():
     assert len({atom1, atom1a}) == 1
     atomset = cr.Atomset({atom1, atom1a, atom2, momentum, bond, face})
     assert atomset.__str__() == \
-        "Atomset                            \n" \
-        "-------                            \n" \
-        "       Atom Cs1 Cs Pos /  1e-08  \ \n" \
-        "                      |       0   |\n" \
-        "                       \      0  / \n" \
-        "                                   \n" \
-        "         Atom Cs2 Cs Pos /  1/4  \ \n" \
-        "                        |   1/4   |\n" \
-        "                         \    0  / \n" \
-        "                                   \n" \
-        "                           Momentum\n" \
-        "                               Bond\n" \
-        "                               Face"
-
+        "Atomset                              \n" \
+        "-------                              \n" \
+        "         Atom Cs1 Cs Pos /  1e-08  \ \n" \
+        "                        |       0   |\n" \
+        "                         \      0  / \n" \
+        "                                     \n" \
+        "           Atom Cs2 Cs Pos /  1/4  \ \n" \
+        "                          |   1/4   |\n" \
+        "                           \    0  / \n" \
+        "                                     \n" \
+        "       Momentum M        Pos /  0  \ \n" \
+        "                            |   0   |\n" \
+        "                             \  0  / \n" \
+        "                 Axial <  0  0  1  > \n" \
+        "                 Axial <  0  0  0  > \n" \
+        "                   Rec <  0  0  0  > \n" \
+        "                                 Bond\n" \
+        "                                 Face"
     transformation = fs("O->(0,0,1/4) \n"
                         "then\n"
                         "a' = a+b \n"
@@ -256,7 +286,6 @@ def test_Atomset():
                            cr.Face("F", [fs("p 0 0 -1/4"), fs("p 1 -1 -1/4"), fs("p 0 1 -1/4")])})
     assert (transformation ** bond) == cr.Bond("B", fs("p 0 0 -1/4"), fs("p 1/2 0 1/4"))
     assert (transformation ** face) == cr.Face("F", [fs("p 0 0 -1/4"), fs("p 1 -1 -1/4"), fs("p 0 1 -1/4")])
-    print(transformation ** momentum)
     assert atomset1 == atomset2
 
     atom1 = cr.Atom("Cs1", "Cs", fs("p 0 0 0"))
@@ -290,12 +319,6 @@ def test_Atomset():
                            cr.Bond("B", fs("p 1 1 1"), fs("p 1/2 1/2 1/2")), \
                            cr.Face("F", [fs("p 0 0 0"), fs("p 1 0 0"), fs("p 0 1 0")]),
                            cr.Face("F_1", [fs("p 1 1 0"), fs("p 1 0 0"), fs("p 0 1 0")])})
-    for item in atomset1.menge:
-        print(item)
-        if isinstance(item, cr.Face):
-            print(item.name)
-            for point in item.corners:
-                print(point)
     assert atomset1 == atomset2
     assert atomset1.names == atomset2.names
 
@@ -372,7 +395,76 @@ def test_Atomset():
     atomset1 = cr.Atomset({cr.Atom("Cs1", "Cs", fs("p 0 0 0"))})
     atomset2 = cr.Atomset({cr.Atom("Cs1", "Cs", fs("p 1 0 0"))})
     assert (atomset1 + "bla") + fs("d 1 0 0") == atomset2
-   
+
+    sg = geo.Spacegroup(
+        geo.canonical,
+        [
+           fs("{x,y,z}"), fs("{-x,-y,z}") 
+        ]
+    )
+    atomset1 = cr.Atomset({
+        cr.Momentum("M", fs("p 0 0 0"), fs("A 0 0 1"))
+    })
+    assert sg ** atomset1 == atomset1
+    atomset1 = cr.Atomset({
+        cr.Momentum("M", fs("p 1/4 1/4 0"), fs("A 1 0 0"))
+    })
+    atomset2 = cr.Atomset({
+        cr.Momentum("M", fs("p 1/4 1/4 0"), fs("A 1 0 0")),
+        cr.Momentum("M", fs("p 3/4 3/4 0"), fs("A 1 0 0"))
+    })
+    sg = geo.Spacegroup(
+        geo.canonical,
+        [
+           fs("{x,y,z}"), fs("{t -x,-y,z}") 
+        ]
+    )
+    assert sg ** atomset1 == atomset2
+    atomset1 = cr.Atomset({
+        cr.Momentum("M", fs("p 1/4 1/4 0"), fs("A 1 0 0"), 
+            axial_imag=fs("A 0 1 0"), propagation=fs("q 0 1 0"))
+    })
+    atomset2 = cr.Atomset({
+        cr.Momentum("M", fs("p 1/4 1/4 0"), fs("A 1 0 0"),
+            axial_imag=fs("A 0 1 0"), propagation=fs("q 0 1 0")),
+        cr.Momentum("M", fs("p 3/4 3/4 0"), fs("A 1 0 0"),
+            axial_imag=fs("A 0 -1 0"), propagation=fs("q 0 1 0"))
+    })
+    sg = geo.Spacegroup(
+        geo.canonical,
+        [
+           fs("{x,y,z}"), fs("{t -x,y+1/2,z}") 
+        ]
+    )
+    print(sg ** atomset1)
+    print(atomset2)
+    assert sg ** atomset1 == atomset2
+    atomset1 = cr.Atomset({
+        cr.Momentum("M", fs("p 1/4 1/4 0"), fs("A 1 0 0"), 
+            axial_imag=fs("A 0 1 0"), propagation=fs("q 0 1 0"))
+    })
+    atomset2 = cr.Atomset({
+        cr.Momentum("M", fs("p 1/4 1/4 0"), fs("A 1 0 0"),
+            axial_imag=fs("A 0 1 0"), propagation=fs("q 0 1 0")),
+        cr.Momentum("M", fs("p 1/4 1/2 0"), fs("A 0 -1 0"),
+            axial_imag=fs("A 1 0 0"), propagation=fs("q 0 1 0")),
+        cr.Momentum("M", fs("p 1/4 3/4 0"), fs("A -1 0 0"),
+            axial_imag=fs("A 0 -1 0"), propagation=fs("q 0 1 0")),
+        cr.Momentum("M", fs("p 1/4 0 0"), fs("A 0 1 0"),
+            axial_imag=fs("A -1 0 0"), propagation=fs("q 0 1 0"))
+    })
+    sg = geo.Spacegroup(
+        geo.canonical,
+        [
+           fs("{x,y,z}"), fs("{x,y+1/4,z}"),
+           fs("{x,y+1/2,z}"), fs("{x,y+3/4,z}") 
+        ]
+    )
+    print(sg ** atomset1)
+    print(atomset2)
+    assert sg ** atomset1 == atomset2
+
+
 def test_Subset():
     a1 = cr.Atom("Fe1", "Fe", fs("p 0 0 0"))
     a2 = cr.Atom("Fe2", "Fe", fs("p 0 0 1/4"))
