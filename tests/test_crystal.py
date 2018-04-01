@@ -106,8 +106,8 @@ def test_Momentum():
     assert fs("{x,y,z+1}") ** m == m
     m = cr.Momentum("M", fs("p 0 0 0"), fs("A 1 0 0"),
         axial_imag=fs("A 0 1 0"), propagation=fs("q 0 0 0.5"))
-    m1 = cr.Momentum("M", fs("p 0 0 1"), fs("A -1.0 0.0 0"),
-        axial_imag=fs("A 0.0 -1.0 0"), propagation=fs("q 0 0 0.5"))
+    m1 = cr.Momentum("M", fs("p 0 0 1"), fs("A -1.0 0 0"),
+        axial_imag=fs("A 0 -1.0 0"), propagation=fs("q 0 0 0.5"))
     my_m = fs("-x,-y,z+1/2") ** (fs("-x,-y,z+1/2") ** m)
     assert hash(my_m) == hash(m1)
     m = cr.Momentum("M", fs("p 0 0 0"), fs("A 1 0 0"),
@@ -437,8 +437,6 @@ def test_Atomset():
            fs("{x,y,z}"), fs("{t -x,y+1/2,z}") 
         ]
     )
-    print(sg ** atomset1)
-    print(atomset2)
     assert sg ** atomset1 == atomset2
     atomset1 = cr.Atomset({
         cr.Momentum("M", fs("p 1/4 1/4 0"), fs("A 1 0 0"), 
@@ -447,12 +445,12 @@ def test_Atomset():
     atomset2 = cr.Atomset({
         cr.Momentum("M", fs("p 1/4 1/4 0"), fs("A 1 0 0"),
             axial_imag=fs("A 0 1 0"), propagation=fs("q 0 1 0")),
-        cr.Momentum("M", fs("p 1/4 1/2 0"), fs("A 0 -1 0"),
-            axial_imag=fs("A 1 0 0"), propagation=fs("q 0 1 0")),
+        cr.Momentum("M", fs("p 1/4 1/2 0"), fs("A 0 1 0"),
+            axial_imag=fs("A -1 0 0"), propagation=fs("q 0 1 0")),
         cr.Momentum("M", fs("p 1/4 3/4 0"), fs("A -1 0 0"),
             axial_imag=fs("A 0 -1 0"), propagation=fs("q 0 1 0")),
-        cr.Momentum("M", fs("p 1/4 0 0"), fs("A 0 1 0"),
-            axial_imag=fs("A -1 0 0"), propagation=fs("q 0 1 0"))
+        cr.Momentum("M", fs("p 1/4 0 0"), fs("A 0 -1 0"),
+            axial_imag=fs("A 1 0 0"), propagation=fs("q 0 1 0"))
     })
     sg = geo.Spacegroup(
         geo.canonical,

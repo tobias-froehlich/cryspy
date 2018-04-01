@@ -150,7 +150,7 @@ class Momentum(Drawable):
             axial_new = left ** self.axial
             axial_imag_new = left ** self.axial_imag
             propagation_new = left ** self.propagation
-            phi = 360 * (self.propagation*(pos_new - self.pos))
+            phi = -360 * (self.propagation*(pos_new - self.pos))
             sin = nb.dsin(phi)
             cos = nb.dcos(phi)
             result = Momentum(
