@@ -519,6 +519,21 @@ def test_Metric():
     assert metric.angle(q1, q1).__str__() == "0.0"
     assert metric.dangle(q1, q1).__str__() == "0"
 
+    metric = geo.Metric(nb.Matrix([
+        [1, 0, 0, 0],
+        [0, 4, 0, 0],
+        [0, 0, 9, 0],
+        [0, 0, 0, 1]
+    ]))
+    
+    A1 = geo.Axial(nb.Matrix([[1, 0, 0, 0]]))
+    A2 = geo.Axial(nb.Matrix([[0, 1, 0, 0]]))
+    A3 = geo.Axial(nb.Matrix([[0, 0, 1, 0]]))
+    assert metric.area(A1) == 6
+    assert metric.area(A2) == 3
+    assert metric.area(A3) == 2
+
+
     metric = geo.Cellparameters(4.15, 4.15, 28.64, 90, 90, 120).to_Metric()
 
     M = nb.Matrix([[9, 0, 0, 0],

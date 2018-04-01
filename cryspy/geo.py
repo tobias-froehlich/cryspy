@@ -684,6 +684,12 @@ class Metric(Operator):
             "Argument must be of type Dif or Rec."
         return nb.sqrt(self.dot(vector, vector))
 
+    def area(self, axial):
+        assert isinstance(axial, Axial), \
+            "Argument must be of type Axial."
+        product = axial.value * self.valueinv * axial.value.transpose()
+        return nb.sqrt(product.liste[0].liste[0]) * self.cellvolume()
+
     def angle(self, vector1, vector2):
         # Angle in radians.
         assert (isinstance(vector1, Dif) and isinstance(vector2, Dif)) \
