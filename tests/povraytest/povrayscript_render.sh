@@ -1,0 +1,1 @@
+povray Width=600 Height=400 +V +Ipovrayscript.pov +Opovrayscript.png +P +A0.2

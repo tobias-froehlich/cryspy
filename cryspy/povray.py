@@ -133,40 +133,19 @@ def make_povray_script(atomset, metric, outfilename):
     outstr = ""
     outstr += "//START_CAM\n"
     outstr += "//END_CAM\n"
-    outstr += draw_axis(metric, "x")
-    outstr += draw_axis(metric, "y")
-    outstr += draw_axis(metric, "z")
+    # Plot the axes:
+    for end in [fs("p 1 0 0"), fs("p 0 1 0"), fs("p 0 0 1")]:
+        outstr += draw_arrow(
+            schmidt ** fs("p 0 0 0"),
+            schmidt ** end,
+            const.povray__thickness_of_axis_shaft,
+            const.povray__thickness_of_axis_tip,
+            const.povray__height_of_axis_tip,
+            const.povray__axes_color
+        )
+
+    # sort objects by type:
     outstr += "\n"
-
-    # Calculate the reciprocal basis ...
-    pos = fs("p 1 0 0")
-    xa = float((schmidt ** pos).x())
-    ya = float((schmidt ** pos).y())
-    za = float((schmidt ** pos).z())
-    pos = fs("p 0 1 0")
-    xb = float((schmidt ** pos).x())
-    yb = float((schmidt ** pos).y())
-    zb = float((schmidt ** pos).z())
-    pos = fs("p 0 0 1")
-    xc = float((schmidt ** pos).x())
-    yc = float((schmidt ** pos).y())
-    zc = float((schmidt ** pos).z())
-
-    v = float(metric.cellvolume())
-    xa_ = (yb*zc - yc*zb) / v
-    ya_ = (zb*xc - zc*xb) / v
-    za_ = (xb*yc - xc*yb) / v
-    xb_ = (yc*za - ya*zc) / v
-    yb_ = (zc*xa - za*xc) / v
-    zb_ = (xc*ya - xa*yc) / v
-    xc_ = (ya*zb - yb*za) / v
-    yc_ = (za*xb - zb*xa) / v
-    zc_ = (xa*yb - xb*ya) / v
-    # ... and the areas:
-    Abc = 1/float(metric.length(fs("q 1 0 0")))
-    Aca = 1/float(metric.length(fs("q 0 1 0")))
-    Aab = 1/float(metric.length(fs("q 0 0 1")))
-
     atoms = []
     bonds = []
     faces = []
@@ -181,12 +160,12 @@ def make_povray_script(atomset, metric, outfilename):
         elif isinstance(item, cryspy.crystal.Momentum):
             momentums.append(item)
 
+    # declare povray-objects for each atom type:
     atomtypes = []
     for atom in atoms:
         typ = atom.typ
         if typ not in atomtypes:
             atomtypes.append(typ)
-
     for typ in atomtypes:
         (spheresize, color) = cryspy.tables.colorscheme(typ)
         (r, g, b) = color
@@ -201,53 +180,16 @@ def make_povray_script(atomset, metric, outfilename):
     outstr += "//END_LEGEND\n"
 
     for atom in atoms:
-        pos_c = schmidt ** atom.pos
-        x = float(pos_c.x())
-        y = float(pos_c.y())
-        z = float(pos_c.z())
-        outstr += "object {\n"
-        outstr += "    Atom_%s\n"%(atom.typ)
-        outstr += "    translate <%f, %f, %f>\n"%(x, z, y)
-        outstr += "}\n"
+        outstr += draw_atom(schmidt ** atom)
 
     for bond in bonds:
-        if bond.has_thickness:
-            thickness = bond.thickness
-        else:
-            thickness = const.povray__std_bond_thickness
-        if bond.has_color:
-            color = bond.color
-        else:
-            color = const.povray__std_bond_color
-        outstr += draw_cylinder(metric, bond.start, bond.target, thickness, color)
- 
+        outstr += draw_bond(schmidt ** bond)
+
     for face in faces:
-        outstr += draw_face(metric, face)
+        outstr += draw_face(schmidt ** face)
 
     for momentum in momentums:
-        if momentum.has_plotlength:
-            plotlength = momentum.plotlength
-        else:
-            plotlength = const.povray__std_momentum_plotlength
-        if momentum.has_color:
-            color = momentum.color
-        else:
-            color = const.povray__std_momentum_color
-        x0 = float((schmidt ** momentum.pos).x())
-        y0 = float((schmidt ** momentum.pos).y())
-        z0 = float((schmidt ** momentum.pos).z())
-        h = float(momentum.axial.h())
-        k = float(momentum.axial.k())
-        l = float(momentum.axial.l())
-
-        dx = float(h * xa_ + k * xb_ + l * xc_) * Abc * 0.5
-        dy = float(h * ya_ + k * yb_ + l * yc_) * Abc * 0.5
-        dz = float(h * za_ + k * zb_ + l * zc_) * Abc * 0.5
-
-        d = cryspy.geo.Dif(cryspy.numbers.Matrix([[dx], [dy], [dz], [0]]))
-        start = momentum.pos - d
-        end = momentum.pos + d
-        outstr += draw_momentum(metric, start, end, color)
+        outstr += draw_momentum(schmidt ** momentum)
 
 
     outfile = open(outfilename, "w")
@@ -255,48 +197,68 @@ def make_povray_script(atomset, metric, outfilename):
     outfile.close()
 
 
-def draw_axis(metric, xyorz):
-    assert isinstance(xyorz, str), \
-        "xyorz must be of type str. It might be 'x', 'y' or 'z'."
-    assert xyorz in ['x', 'y', 'z'], \
-        "xyorz must be of type str. It might be 'x', 'y' or 'z'."
-
+def draw_atom(atom):
     outstr = ""
-    start = fs("p 0 0 0")
-    if xyorz == "x":
-        end = fs("p 1 0 0")
-    elif xyorz == "y":
-        end = fs("p 0 1 0")
-    elif xyorz == "z":
-        end = fs("p 0 0 1")
-    length = metric.length(end - cryspy.geo.origin)
-    tip_start = cryspy.geo.origin + \
-        (end - cryspy.geo.origin)* (1 - const.povray__height_of_axis_tip / length)
-    outstr += draw_cylinder(
-        metric, start, tip_start,
-        const.povray__thickness_of_axis_shaft,
-        const.povray__axes_color
-    )
-    outstr += draw_cone(
-        metric, tip_start, end,
-        const.povray__thickness_of_axis_tip,
-        const.povray__axes_color
-    )
+    x = float(atom.pos.x())
+    y = float(atom.pos.y())
+    z = float(atom.pos.z())
+    outstr += "object {\n"
+    outstr += "    Atom_%s\n"%(atom.typ)
+    outstr += "    translate <%f, %f, %f>\n"%(x, z, y)
+    outstr += "}\n"
     return outstr
 
-def draw_momentum(metric, start, end, color):
+
+def draw_bond(bond):
     outstr = ""
-    length = metric.length(end - start)
-    cone_start = end - (end - start)*cryspy.numbers.Mixed(const.povray__height_of_momentum_tip/length)
-    thickness = const.povray__thickness_of_momentum_shaft
-    outstr += draw_cylinder(metric, start, cone_start, thickness, color)
-    thickness = const.povray__thickness_of_momentum_tip
-    outstr += draw_cone(metric, cone_start, end, thickness, color)
+    if bond.has_thickness:
+        thickness = bond.thickness
+    else:
+        thickness = const.povray__std_bond_thickness
+    if bond.has_color:
+        color = bond.color
+    else:
+        color = const.povray__std_bond_color
+    outstr += draw_cylinder(bond.start, bond.target, thickness, color)
+    return outstr
+ 
+def draw_momentum(momentum):
+    outstr = ""
+    if momentum.has_plotlength:
+        plotlength = momentum.plotlength
+    else:
+        plotlength = const.povray__std_momentum_plotlength
+    if momentum.has_color:
+        color = momentum.color
+    else:
+        color = const.povray__std_momentum_color
+    pos = momentum.pos
+    axial = momentum.axial
+    start_x = float(pos.x() - axial.h())
+    start_y = float(pos.y() - axial.k())
+    start_z = float(pos.z() - axial.l())
+    start = fs("p %f %f %f"%(start_x, start_y, start_z))
+    end_x = float(pos.x() + axial.h())
+    end_y = float(pos.y() + axial.k())
+    end_z = float(pos.z() + axial.l())
+    end = fs("p %f %f %f"%(end_x, end_y, end_z))
+ 
+    thickness_of_tip = const.povray__thickness_of_momentum_tip
+    thickness_of_shaft = const.povray__thickness_of_momentum_shaft
+    height_of_tip = const.povray__height_of_momentum_tip
+    outstr += draw_arrow(start, end, thickness_of_shaft, thickness_of_tip, height_of_tip, color)
     return outstr
 
-def draw_cylinder(metric, start, end, thickness, color):
-    assert isinstance(metric, cryspy.geo.Metric), \
-        "metric must be of type cryspy.geo.Metric."
+def draw_arrow(start, end, thickness_of_shaft, thickness_of_tip, height_of_tip, color):
+    outstr = ""
+    length = cryspy.geo.cartesian.length(end - start)
+    cone_start = end - (end - start)\
+        *cryspy.numbers.Mixed(height_of_tip/length)
+    outstr += draw_cylinder(start, cone_start, thickness_of_shaft, color)
+    outstr += draw_cone(cone_start, end, thickness_of_tip, color)
+    return outstr 
+
+def draw_cylinder(start, end, thickness, color):
     assert isinstance(start, cryspy.geo.Pos) \
         and isinstance(end, cryspy.geo.Pos), \
         "start and end must be of type cryspy.geo.Pos."
@@ -309,15 +271,12 @@ def draw_cylinder(metric, start, end, thickness, color):
             "color must be a list of int or float."
 
     outstr = ""
-    schmidt = metric.schmidttransformation
-    start_c = schmidt ** start
-    end_c = schmidt ** end
-    start_x = float(start_c.x())
-    start_y = float(start_c.y())
-    start_z = float(start_c.z())
-    end_x = float(end_c.x())
-    end_y = float(end_c.y())
-    end_z = float(end_c.z())
+    start_x = float(start.x())
+    start_y = float(start.y())
+    start_z = float(start.z())
+    end_x = float(end.x())
+    end_y = float(end.y())
+    end_z = float(end.z())
 
     outstr += "cylinder {\n"
     outstr += "    <%f, %f, %f>,\n"%(start_x, start_z, start_y)
@@ -332,9 +291,7 @@ def draw_cylinder(metric, start, end, thickness, color):
     outstr += "}\n"
     return outstr
 
-def draw_cone(metric, start, end, thickness, color):
-    assert isinstance(metric, cryspy.geo.Metric), \
-        "metric must be of type cryspy.geo.Metric."
+def draw_cone(start, end, thickness, color):
     assert isinstance(start, cryspy.geo.Pos) \
         and isinstance(end, cryspy.geo.Pos), \
         "start and end must be of type cryspy.geo.Pos."
@@ -348,15 +305,12 @@ def draw_cone(metric, start, end, thickness, color):
 
 
     outstr = ""
-    schmidt = metric.schmidttransformation
-    start_c = schmidt ** start
-    end_c = schmidt ** end
-    start_x = float(start_c.x())
-    start_y = float(start_c.y())
-    start_z = float(start_c.z())
-    end_x = float(end_c.x())
-    end_y = float(end_c.y())
-    end_z = float(end_c.z())
+    start_x = float(start.x())
+    start_y = float(start.y())
+    start_z = float(start.z())
+    end_x = float(end.x())
+    end_y = float(end.y())
+    end_z = float(end.z())
 
     outstr += "cone {\n"
     outstr += "    <%f, %f, %f>,\n"%(start_x, start_z, start_y)
@@ -372,7 +326,7 @@ def draw_cone(metric, start, end, thickness, color):
     outstr += "}\n"
     return outstr
 
-def draw_face(metric, face):
+def draw_face(face):
     if face.has_color:
         color = face.color
     else:
@@ -382,17 +336,15 @@ def draw_face(metric, face):
         opacity = face.opacity
     else:
         opacity = const.povray__std_face_opacity
-    schmidt = metric.schmidttransformation
     outstr = ""
     number_of_corners = len(face.corners)
     outstr += "mesh2 {\n"
     outstr += "    vertex_vectors {"
     outstr += "%i, "%(number_of_corners)
     for corner in face.corners:
-        pos_c = schmidt ** corner
-        x = float(pos_c.x())
-        y = float(pos_c.y())
-        z = float(pos_c.z())
+        x = float(corner.x())
+        y = float(corner.y())
+        z = float(corner.z())
         outstr += "<%f, %f, %f>, "%(x, z, y)
     outstr = outstr[:-2]
     outstr += "}\n"

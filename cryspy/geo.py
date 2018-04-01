@@ -754,6 +754,12 @@ class Metric(Operator):
     def __str__(self):
         return bp.block([["Metric", self.value.__str__()]])
 
+cartesian = Metric(nb.Matrix([
+    [1, 0, 0, 0],
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1]
+]))
 
 class Cellparameters():
     def __init__(self, a, b, c, alpha, beta, gamma):
