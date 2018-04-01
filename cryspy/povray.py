@@ -138,6 +138,35 @@ def make_povray_script(atomset, metric, outfilename):
     outstr += draw_axis(metric, "z")
     outstr += "\n"
 
+    # Calculate the reciprocal basis ...
+    pos = fs("p 1 0 0")
+    xa = float((schmidt ** pos).x())
+    ya = float((schmidt ** pos).y())
+    za = float((schmidt ** pos).z())
+    pos = fs("p 0 1 0")
+    xb = float((schmidt ** pos).x())
+    yb = float((schmidt ** pos).y())
+    zb = float((schmidt ** pos).z())
+    pos = fs("p 0 0 1")
+    xc = float((schmidt ** pos).x())
+    yc = float((schmidt ** pos).y())
+    zc = float((schmidt ** pos).z())
+
+    v = float(metric.cellvolume())
+    xa_ = (yb*zc - yc*zb) / v
+    ya_ = (zb*xc - zc*xb) / v
+    za_ = (xb*yc - xc*yb) / v
+    xb_ = (yc*za - ya*zc) / v
+    yb_ = (zc*xa - za*xc) / v
+    zb_ = (xc*ya - xa*yc) / v
+    xc_ = (ya*zb - yb*za) / v
+    yc_ = (za*xb - zb*xa) / v
+    zc_ = (xa*yb - xb*ya) / v
+    # ... and the areas:
+    Abc = 1/float(metric.length(fs("q 1 0 0")))
+    Aca = 1/float(metric.length(fs("q 0 1 0")))
+    Aab = 1/float(metric.length(fs("q 0 0 1")))
+
     atoms = []
     bonds = []
     faces = []
@@ -207,24 +236,17 @@ def make_povray_script(atomset, metric, outfilename):
         x0 = float((schmidt ** momentum.pos).x())
         y0 = float((schmidt ** momentum.pos).y())
         z0 = float((schmidt ** momentum.pos).z())
-        dx = float((schmidt ** momentum.direction).x())
-        dy = float((schmidt ** momentum.direction).y())
-        dz = float((schmidt ** momentum.direction).z())
+        h = float(momentum.axial.h())
+        k = float(momentum.axial.k())
+        l = float(momentum.axial.l())
 
+        dx = float(h * xa_ + k * xb_ + l * xc_) * Abc * 0.5
+        dy = float(h * ya_ + k * yb_ + l * yc_) * Abc * 0.5
+        dz = float(h * za_ + k * zb_ + l * zc_) * Abc * 0.5
 
-        """
-        length = np.sqrt(dx*dx + dy*dy + dz*dz)
-        x1 = x0 - dx * plotlength / length
-        y1 = y0 - dy * plotlength / length
-        z1 = z0 - dz * plotlength / length
-        x2 = x0 + dx * plotlength / length
-        y2 = y0 + dy * plotlength / length
-        z2 = z0 + dz * plotlength / length
-        """
-
-        length = metric.length(momentum.direction)
-        start = momentum.pos - momentum.direction * cryspy.numbers.Mixed(plotlength / length)
-        end = momentum.pos + momentum.direction * cryspy.numbers.Mixed(plotlength / length)
+        d = cryspy.geo.Dif(cryspy.numbers.Matrix([[dx], [dy], [dz], [0]]))
+        start = momentum.pos - d
+        end = momentum.pos + d
         outstr += draw_momentum(metric, start, end, color)
 
 
