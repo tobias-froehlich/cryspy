@@ -137,12 +137,7 @@ class Momentum(Drawable):
 
     def __add__(self, right):
         if isinstance(right, geo.Dif):
-            result = Momentum(self.name, self.pos + right, self.axial)
-            if self.has_color:
-                result.set_color(self.color)
-            if self.has_plotlength:
-                result.set_plotlength(self.plotlength)
-            return result
+            return right.to_Symmetry() ** self
         elif isinstance(right, str):
             return Momentum(self.name + right, self.pos, self.axial)
         else:

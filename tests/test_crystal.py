@@ -102,6 +102,7 @@ def test_Momentum():
     m1 = cr.Momentum("M", fs("p 0 0 1"), fs("A -1 0 0"),
         axial_imag=fs("A 0 -1 0"), propagation=fs("q 0 0 1/2"))
     assert fs("x,y,z+1") ** m == m1
+    assert m + fs("d 0 0 1") == m1
     assert fs("{x,y,z+1}") ** m == m
     m = cr.Momentum("M", fs("p 0 0 0"), fs("A 1 0 0"),
         axial_imag=fs("A 0 1 0"), propagation=fs("q 0 0 0.5"))
