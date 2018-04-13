@@ -61,27 +61,28 @@ def make_blender_script(atomset, metric, structurename, outfilename):
     outstr += "l.data.energy = %10.4f\n" % (const.blender__diffuse_light)
 
     # Plot the axes:
-    t = metric.schmidttransformation
+    schmidt = metric.schmidttransformation
 
     pos = fs("p 1 0 0")
-    xa = float((t ** pos).x())
-    ya = float((t ** pos).y())
-    za = float((t ** pos).z())
+    xa = float((schmidt ** pos).x())
+    ya = float((schmidt ** pos).y())
+    za = float((schmidt ** pos).z())
     outstr += add_axis(structurename, 'XAxis', xa, ya, za)
 
     pos = fs("p 0 1 0")
-    xb = float((t ** pos).x())
-    yb = float((t ** pos).y())
-    zb = float((t ** pos).z())
+    xb = float((schmidt ** pos).x())
+    yb = float((schmidt ** pos).y())
+    zb = float((schmidt ** pos).z())
     outstr += add_axis(structurename, 'YAxis', xb, yb, zb)
 
     pos = fs("p 0 0 1")
-    xc = float((t ** pos).x())
-    yc = float((t ** pos).y())
-    zc = float((t ** pos).z())
+    xc = float((schmidt ** pos).x())
+    yc = float((schmidt ** pos).y())
+    zc = float((schmidt ** pos).z())
     outstr += add_axis(structurename, 'ZAxis', xc, yc, zc)
 
     # Calculate the reciprocal basis ...
+    """
     v = float(metric.cellvolume())
     xa_ = (yb*zc - yc*zb) / v
     ya_ = (zb*xc - zc*xb) / v
@@ -102,7 +103,7 @@ def make_blender_script(atomset, metric, structurename, outfilename):
         xc_, yc_, zc_,
         Abc, Aca, Aab
     )
-
+    """
     # Create empty mesh for the positions of the atoms
     outstr += "bpy.ops.mesh.primitive_cube_add(location=(0,0,0))\n"
     outstr += "bpy.ops.object.mode_set(mode='EDIT')\n"
@@ -111,13 +112,13 @@ def make_blender_script(atomset, metric, structurename, outfilename):
     outstr += "posobject = bpy.context.object\n"
     outstr += "posobject.name = '%s.Positions'\n" % (structurename)
 
-    outstr += draw_atomset_or_subset(structurename, atomset, t, reciprocal_coordinates)
+    outstr += draw_atomset_or_subset(structurename, schmidt ** atomset)
 
     outfile = open(outfilename, "w")
     outfile.write(outstr)
     outfile.close()
 
-def draw_atomset_or_subset(structurename, atomset, t, reciprocal_coordinates):
+def draw_atomset_or_subset(structurename, atomset):
     outstr = ""
     # Inspect atomset for different kinds of object and sort them into different lists
     typs = []
@@ -166,9 +167,9 @@ def draw_atomset_or_subset(structurename, atomset, t, reciprocal_coordinates):
     for atom in atomlist:
         atomnumber += 1
         materialnumber += 1
-        x = float((t ** atom.pos).x())
-        y = float((t ** atom.pos).y())
-        z = float((t ** atom.pos).z())
+        x = float(atom.pos.x())
+        y = float(atom.pos.y())
+        z = float(atom.pos.z())
         outstr += "posobject.data.vertices.add(1)\n"
         outstr += "posobject.data.vertices[-1].co = (%f, %f, %f)\n" % (x, y, z)
         outstr += "ob = bpy.data.objects.new( \
@@ -180,10 +181,10 @@ def draw_atomset_or_subset(structurename, atomset, t, reciprocal_coordinates):
 
     # Create arrows for the momentums:
     momentumindex = 0
-    (xa_, ya_, za_,
-     xb_, yb_, zb_,
-     xc_, yc_, zc_,
-     Abc, Aca, Aab) = reciprocal_coordinates
+#    (xa_, ya_, za_,
+#     xb_, yb_, zb_,
+#     xc_, yc_, zc_,
+#     Abc, Aca, Aab) = reciprocal_coordinates
     for momentum in momentumlist:
         momentumindex += 1
         momentumname = "Momentum%03i" % (momentumindex)
@@ -196,24 +197,24 @@ def draw_atomset_or_subset(structurename, atomset, t, reciprocal_coordinates):
         else:
             color = const.blender__std_momentum_color
 
-        x0 = float((t ** momentum.pos).x())
-        y0 = float((t ** momentum.pos).y())
-        z0 = float((t ** momentum.pos).z())
+        x0 = float(momentum.pos.x())
+        y0 = float(momentum.pos.y())
+        z0 = float(momentum.pos.z())
 
         h = float(momentum.axial.h())
         k = float(momentum.axial.k())
         l = float(momentum.axial.l())
 
-        dx = float(h * xa_ + k * xb_ + l * xc_) * Abc * 0.5
-        dy = float(h * ya_ + k * yb_ + l * yc_) * Aca * 0.5
-        dz = float(h * za_ + k * zb_ + l * zc_) * Aab * 0.5
+#        dx = float(h * xa_ + k * xb_ + l * xc_) * Abc * 0.5
+#        dy = float(h * ya_ + k * yb_ + l * yc_) * Aca * 0.5
+#        dz = float(h * za_ + k * zb_ + l * zc_) * Aab * 0.5
 
-        x1 = x0 - dx 
-        y1 = y0 - dy 
-        z1 = z0 - dz 
-        x2 = x0 + dx 
-        y2 = y0 + dy 
-        z2 = z0 + dz 
+        x1 = x0 - h 
+        y1 = y0 - k 
+        z1 = z0 - l 
+        x2 = x0 + h 
+        y2 = y0 + k 
+        z2 = z0 + l 
 
         outstr += add_momentum(structurename, momentumname,
                                x1, y1, z1, x2, y2, z2, color)
@@ -231,12 +232,12 @@ def draw_atomset_or_subset(structurename, atomset, t, reciprocal_coordinates):
             thickness = bond.thickness
         else:
             thickness = const.blender__std_bond_thickness
-        x1 = float((t ** bond.start).x())
-        y1 = float((t ** bond.start).y())
-        z1 = float((t ** bond.start).z())
-        x2 = float((t ** bond.target).x())
-        y2 = float((t ** bond.target).y())
-        z2 = float((t ** bond.target).z())
+        x1 = float(bond.start.x())
+        y1 = float(bond.start.y())
+        z1 = float(bond.start.z())
+        x2 = float(bond.target.x())
+        y2 = float(bond.target.y())
+        z2 = float(bond.target.z())
 
         outstr += add_cylinder(structurename, bondname, 
             x1, y1, z1, x2, y2, z2, 
@@ -260,10 +261,9 @@ def draw_atomset_or_subset(structurename, atomset, t, reciprocal_coordinates):
             color = const.blender__std_face_color
         verts = []
         for corner in face.corners:
-            cartesian_corner = t**corner
-            x = float(cartesian_corner.x())
-            y = float(cartesian_corner.y())
-            z = float(cartesian_corner.z())
+            x = float(corner.x())
+            y = float(corner.y())
+            z = float(corner.z())
             verts.append((x, y, z))
         outstr += add_face(structurename, facename, verts)
         outstr += "mat = bpy.data.materials.new('%s.material.%s')\n" \
@@ -284,7 +284,7 @@ def draw_atomset_or_subset(structurename, atomset, t, reciprocal_coordinates):
     for bitmapface in bitmapfacelist:
          bitmapfaceindex += 1
          bitmapfacename = "Bitmapface%03i" % (bitmapfaceindex)
-         outstr += add_bitmapface(structurename, bitmapfacename, bitmapface, t)
+         outstr += add_bitmapface(structurename, bitmapfacename, bitmapface)
 
 
     # Make all atoms looking smooth:
@@ -297,7 +297,7 @@ def draw_atomset_or_subset(structurename, atomset, t, reciprocal_coordinates):
 
     # Draw all Subsets:
     for subset in subsetlist:
-        outstr += draw_atomset_or_subset(structurename + '.' + subset.name, subset.atomset, t)
+        outstr += draw_atomset_or_subset(structurename + '.' + subset.name, subset.atomset)
 
     return outstr
 
@@ -476,7 +476,7 @@ def add_face(structurename, facename, verts):
     return outstr
     
     
-def add_bitmapface(structurename, bitmapfacename, bitmapface, t):
+def add_bitmapface(structurename, bitmapfacename, bitmapface):
     outstr = ""
     outstr += "mesh_data = bpy.data.meshes.new('%s.mesh%s')\n" \
         %(structurename, bitmapfacename)
