@@ -91,7 +91,9 @@ def test_Momentum():
     assert (m1 + "test").name == "Mtest"
 
     m1 = cr.Momentum("M", fs("p 1 0 1/2"), fs("A 0 0 1"))
+    m1.set_color((0.4, 0.5, 0.6))
     assert (m1 % geo.canonical) == cr.Momentum("M", fs("p 0 0 1/2"), fs("A 0 0 1"))
+    assert (m1 % geo.canonical).color == (0.4, 0.5, 0.6)
 
     m = cr.Momentum("M", fs("p 1 0 1/2"), fs("A 0 0 1"), axial_imag=fs("A 0 1 0"))
     m1 = cr.Momentum("M", fs("p -1 0 1/2"), fs("A 0 0 -1"), axial_imag=fs("A 0 -1 0"))

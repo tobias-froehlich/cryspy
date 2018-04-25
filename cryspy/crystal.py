@@ -183,7 +183,10 @@ class Momentum(Drawable):
         assert isinstance(right, geo.Transgen), \
             "I cannot take an object of type Atom " \
             "modulo an object of type %s" % (type(right))
-        return Momentum(self.name, self.pos % right, self.axial)
+        result = Momentum(self.name, self.pos % right, self.axial)
+        if self.has_color:
+            result.set_color(self.color)
+        return result
 
 
     def __hash__(self):
