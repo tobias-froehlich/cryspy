@@ -88,7 +88,9 @@ def test_Momentum():
     assert fs("-x+3/2,y,z") ** m == cr.Momentum("M", fs("p 3/2 0 0"), fs("A 0 0 -1"))
     assert fs("{x+3/2,-y,z}") ** m == cr.Momentum("M", fs("p 1/2 0 0"), fs("A 0 0 -1"))
     m1 = cr.Momentum("M", fs("p 0 0 1/2"), fs("A 0 0 1"))
+    m1.set_color((0.4, 0.5, 0.6))
     assert (m1 + "test").name == "Mtest"
+    assert (m1 + "test").color == m1.color
 
     m1 = cr.Momentum("M", fs("p 1 0 1/2"), fs("A 0 0 1"))
     m1.set_color((0.4, 0.5, 0.6))

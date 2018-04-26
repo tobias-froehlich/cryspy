@@ -139,7 +139,10 @@ class Momentum(Drawable):
         if isinstance(right, geo.Dif):
             return right.to_Symmetry() ** self
         elif isinstance(right, str):
-            return Momentum(self.name + right, self.pos, self.axial)
+            result =  Momentum(self.name + right, self.pos, self.axial)
+            if self.has_color:
+                result.set_color(self.color)
+            return result
         else:
             return NotImplemented
 
