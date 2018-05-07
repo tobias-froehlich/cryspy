@@ -12,6 +12,8 @@ blender__height_of_momentum_tip = 0.6
 blender__num_of_segments_of_momentum_tip = 32  # 4...128: rough...fine
 blender__std_momentum_plotlength = 1
 blender__std_momentum_color = (0, 0, 1)
+blender__thickness_of_bond_arrow_tip = 0.5
+blender__height_of_bond_arrow_tip = 1.0
 blender__num_of_segments_of_bond = 32 # 4...128: rough...fine
 blender__std_bond_thickness = 0.05
 blender__std_bond_color = (0.5, 0.5, 0.5)
@@ -40,5 +42,7 @@ povray__thickness_of_momentum_tip = blender__thickness_of_momentum_tip
 povray__height_of_momentum_tip = blender__height_of_momentum_tip
 povray__std_momentum_plotlength = blender__std_momentum_plotlength
 povray__std_momentum_color = blender__std_momentum_color
+povray__thickness_of_bond_arrow_tip = blender__thickness_of_bond_arrow_tip
+povray__height_of_bond_arrow_tip = blender__height_of_bond_arrow_tip
 
 

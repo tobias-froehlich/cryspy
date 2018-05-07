@@ -211,6 +211,8 @@ class Bond(Drawable):
         self.target = target
         self.has_thickness = False
         self.thickness = None
+        self.has_start_arrow = False
+        self.has_target_arrow = False
 
     def set_color(self, color):
         assert isinstance(color, tuple), \
@@ -235,16 +237,28 @@ class Bond(Drawable):
         self.thickness = thickness
         self.has_thickness = True
 
+    def add_start_arrow(self):
+        self.has_start_arrow = True
+
+    def remove_start_arrow(self):
+        self.has_start_arrow = False
+
+    def add_target_arrow(self):
+        self.has_target_arrow = True
+
+    def remove_target_arrow(self):
+        self.has_target_arrow = False
+
     def __str__(self):
         return "Bond"
 
     def __eq__(self, right):
         if isinstance(right, Bond):
-            if   (self.start == right.start) and (self.target == right.target) \
-              or (self.start == right.target) and (self.target == right.start):
-                return True
-            else:
-                return False
+#            if   (self.start == right.start) and (self.target == right.target) \
+#              or (self.start == right.target) and (self.target == right.start):
+                return hash(self) == hash(right)
+#            else:
+#                return False
         else:
             return False
 
@@ -255,6 +269,10 @@ class Bond(Drawable):
                 result.set_color(self.color)
             if self.has_thickness:
                 result.set_thickness(self.thickness)
+            if self.has_start_arrow:
+                result.add_start_arrow()
+            if self.has_target_arrow:
+                result.add_target_arrow()
             return result
         elif isinstance(right, str):
             result = Bond(self.name + right, self.start, self.target)
@@ -262,6 +280,10 @@ class Bond(Drawable):
                 result.set_color(self.color)
             if self.has_thickness:
                 result.set_thickness(self.thickness)
+            if self.has_start_arrow:
+                result.add_start_arrow()
+            if self.has_target_arrow:
+                result.add_target_arrow()
             return result
         else:
             return NotImplemented
@@ -285,6 +307,10 @@ class Bond(Drawable):
                 result.set_color(self.color)
             if self.has_thickness:
                 result.set_thickness(self.thickness)
+            if self.has_start_arrow:
+                result.add_start_arrow()
+            if self.has_target_arrow:
+                result.add_target_arrow()
             return result
         else:
             return NotImplemented
@@ -303,6 +329,10 @@ class Bond(Drawable):
                 new_bond.set_color(self.color)
             if self.has_thickness:
                 new_bond.set_thickness(self.thickness)
+            if self.has_start_arrow:
+                new_bond.add_start_arrow()
+            if self.has_target_arrow:
+                new_bond.add_target_arrow()
             return new_bond
 
 
@@ -312,6 +342,16 @@ class Bond(Drawable):
         string = "bond%i,%i" \
             % (hash(self.start)+hash(self.target),
                hash(self.start) * hash(self.target))
+        if self.has_start_arrow or self.has_target_arrow:
+            if self.has_start_arrow:
+                summand1 = hash(self.start)**2
+            else:
+                summand1 = hash(self.start)
+            if self.has_target_arrow:
+                summand2 = hash(self.target)**2
+            else:
+                summand2 = hash(self.target)
+            string += ",%i"%(summand1 + summand2)
         return int(hashlib.sha1(string.encode()).hexdigest(), 16)
 
 

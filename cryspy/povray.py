@@ -127,22 +127,23 @@ class Camerasystem:
         return (x, y, z)
 
 
-def make_povray_script(atomset, metric, outfilename):
+def make_povray_script(atomset, metric, outfilename, plot_axes=True):
     atomset = atomset.unpack_subsets()
     schmidt = metric.schmidttransformation
     outstr = ""
     outstr += "//START_CAM\n"
     outstr += "//END_CAM\n"
     # Plot the axes:
-    for end in [fs("p 1 0 0"), fs("p 0 1 0"), fs("p 0 0 1")]:
-        outstr += draw_arrow(
-            schmidt ** fs("p 0 0 0"),
-            schmidt ** end,
-            const.povray__thickness_of_axis_shaft,
-            const.povray__thickness_of_axis_tip,
-            const.povray__height_of_axis_tip,
-            const.povray__axes_color
-        )
+    if plot_axes:
+        for end in [fs("p 1 0 0"), fs("p 0 1 0"), fs("p 0 0 1")]:
+            outstr += draw_arrow(
+                schmidt ** fs("p 0 0 0"),
+                schmidt ** end,
+                const.povray__thickness_of_axis_shaft,
+                const.povray__thickness_of_axis_tip,
+                const.povray__height_of_axis_tip,
+                const.povray__axes_color
+            )
 
     # sort objects by type:
     outstr += "\n"
@@ -219,7 +220,25 @@ def draw_bond(bond):
         color = bond.color
     else:
         color = const.povray__std_bond_color
-    outstr += draw_cylinder(bond.start, bond.target, thickness, color)
+    if (not bond.has_start_arrow) and (not bond.has_target_arrow):
+        print("Kein target arrow!")
+        outstr += draw_cylinder(bond.start, bond.target, thickness, color)
+    if bond.has_start_arrow:
+        outstr += draw_arrow(
+            bond.target, bond.start,
+            thickness,
+            const.povray__thickness_of_bond_arrow_tip,
+            const.povray__height_of_bond_arrow_tip,
+            color
+        )
+    if bond.has_target_arrow:
+         outstr += draw_arrow(
+            bond.start, bond.target,
+            thickness,
+            const.povray__thickness_of_bond_arrow_tip,
+            const.povray__height_of_bond_arrow_tip,
+            color
+        )
     return outstr
  
 def draw_momentum(momentum):

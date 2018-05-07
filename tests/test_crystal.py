@@ -166,6 +166,18 @@ def test_Bond():
     assert (b1 % geo.canonical).has_color == b1.has_color
     assert (b1 % geo.canonical).thickness == b1.thickness
     assert (b1 % geo.canonical).has_thickness == b1.has_thickness
+    b1 = cr.Bond("B", fs("p 0 0 0"), fs("p 0 0 1"))
+    b2 = cr.Bond("B", fs("p 0 0 1"), fs("p 0 0 0"))
+    assert b1 == b2
+    b1.add_target_arrow()
+    b2.add_start_arrow()
+    assert b1 == b2
+    b1.add_start_arrow()
+    b2.add_target_arrow()
+    assert b1 == b2
+    b1.remove_target_arrow()
+    b2.remove_start_arrow()
+    assert b1 == b2
 
 
 def test_Face():
