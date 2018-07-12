@@ -72,6 +72,15 @@ def test_Mixed():
     me3 = nb.Mixed(e3)
     assert hash(me1) == hash(me2)
     assert (hash(me1) == hash(me3)) == False
+    i1 = nb.Mixed(-1)
+    i2 = nb.Mixed(-2)
+    assert (hash(i1) == hash(i2)) == False
+    f1 = nb.Mixed(-1.0)
+    f2 = nb.Mixed(-2.0)
+    assert (hash(f1) == hash(f2)) == False
+    q1 = nb.Mixed(fr.Fraction(-1, 1))
+    q2 = nb.Mixed(fr.Fraction(-2, 1))
+    assert (hash(q1) == hash(q2)) == False
 
     a1 = nb.Mixed(uc.ufloat(-0.10914, 0.00005))
     a2 = nb.Mixed(uc.ufloat(0.29777, 0.00004))

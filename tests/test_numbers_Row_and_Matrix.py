@@ -93,6 +93,10 @@ def test_Row():
     assert (R1 == R3) == False
     assert (R1 == R4) == False
     assert (R1 == 5) == False
+    R1 = nb.Row([-1])
+    R2 = nb.Row([-2])
+    assert (R1 == R2) == False
+    assert (hash(R1) == hash(R2)) == False
 
     # Hash
     R1 = nb.Row([0, 0, 1.00000000])
@@ -179,6 +183,11 @@ def test_Matrix():
     assert (M1 == M3) == False
     assert hash(M1) == hash(M2)
     assert (hash(M1) == hash(M3)) == False
+
+    M1 = nb.Matrix([nb.Row([-1]), nb.Row([0]), nb.Row([-6])])
+    M2 = nb.Matrix([nb.Row([-2]), nb.Row([0]), nb.Row([-6])])
+#    assert (M1 == M2) == False
+#    assert (hash(M1) == hash(M2)) == False
 
     # print
 

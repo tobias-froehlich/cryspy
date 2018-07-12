@@ -113,7 +113,7 @@ class Mixed(object):
             string += str(cryspy.hash.ufloathash(self.value))
         elif isinstance(self.value, int):
             string = 'in'
-            string += str(hash(self.value))
+            string += str(self.value)
         elif isinstance(self.value, float):
             string = 'fl'
             string += str(cryspy.hash.floathash(self.value))

@@ -52,4 +52,4 @@ atomset.add(subset)
 atomset = sg ** atomset
 atomset = cryspy.utils.fill(atomset, [0.5, 0.05, 0.05])
 print(atomset)
-cryspy.blender.make_blender_script(atomset, metric, "structure", "blenderscript2.py")
+cryspy.blender.make_blender_script(atomset, metric, "structure", "/tmp/blenderscript.py")

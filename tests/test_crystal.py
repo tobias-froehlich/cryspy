@@ -148,6 +148,10 @@ def test_Bond():
     assert (hash(b) == hash(b3)) == False
     assert (b == b3) == False
     assert b + d == cr.Bond("B", fs("p 0 0 1/2"), fs("p 0 0 1"))
+    b1 = cr.Bond("B", fs("p -1 0 -6"), fs("p -1 0 6"))
+    b2 = cr.Bond("B", fs("p -2 0 -6"), fs("p -2 0 6"))
+    assert (b1 == b2) == False
+
     assert fs("x+1/2,y,z") ** b == cr.Bond("B", fs("p 1/2 0 0"), fs("p 1/2 0 1/2"))
     assert fs("{x+3/2,y,z}") ** b == cr.Bond("B", fs("p 1/2 0 0"), fs("p 1/2 0 1/2"))
     assert fs("{x,y,z+3/4}") ** b == cr.Bond("B", fs("p 0 0 -1/4"), fs("p 0 0 1/4"))

@@ -21,7 +21,7 @@ def floathash_old(number):
     for i in range(len(floatlist)):
         if np.abs(number - floatlist[i]) < delta:
             return hashlist[i]
-    h = hash(number)
+    h = hash(str(number))
     if len(floatlist) == 0:
         floatlist = [number]
         hashlist = [h]
@@ -43,7 +43,7 @@ def floathash_new(number):
     global hashlist
     n = len(floatlist)
     if n == 0:
-        h = hash(number)
+        h = hash(str(number))
         floatlist = [number]
         hashlist = [h]
         return h
@@ -57,7 +57,7 @@ def floathash_new(number):
             return hashlist[imid]
         else:
             if imin == imax:
-                h = hash(number)
+                h = hash(str(number))
                 if floatlist[imid] < number:
                     floatlist[imid+1:imid+1] = [number]
                     hashlist[imid+1:imid+1] = [h]

@@ -38,9 +38,9 @@ for atomseti in [atomset1, atomset2, atomset3, atomset4, \
             and -0.05 <= float(atom.pos.z()) <= 1.05:
             menge = menge.union({atom})
 
-momentum1 = cryspy.crystal.Momentum("M1", fs("p 1/2 1/2 1/2"), fs("A 3 0 0"))
-momentum2 = cryspy.crystal.Momentum("M2", fs("p 1/2 1/2 1/2"), fs("A 0 3 0"))
-momentum3 = cryspy.crystal.Momentum("M3", fs("p 1/2 1/2 1/2"), fs("A 0 0 3"))
+momentum1 = cryspy.crystal.Momentum("M1", fs("p 1/2 1/2 1/2"), fs("A 0.03 0 0"))
+momentum2 = cryspy.crystal.Momentum("M2", fs("p 1/2 1/2 1/2"), fs("A 0 0.03 0"))
+momentum3 = cryspy.crystal.Momentum("M3", fs("p 1/2 1/2 1/2"), fs("A 0 0 0.03"))
 menge.add(momentum1)
 menge.add(momentum2)
 menge.add(momentum3)

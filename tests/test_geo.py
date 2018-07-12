@@ -19,6 +19,9 @@ def test_Pos():
     x = geo.Pos(nb.Matrix([[0], [0], [1.00000000], [1]]))
     y = geo.Pos(nb.Matrix([[0], [0], [0.99999999], [1]]))
     assert hash(x) == hash(y)
+    x = geo.Pos(nb.Matrix([[-1], [0], [-6], [1]]))
+    y = geo.Pos(nb.Matrix([[-2], [0], [-6], [1]]))
+    assert (hash(x) == hash(y)) == False
 
 
 def test_Dif():
