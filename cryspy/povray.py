@@ -16,7 +16,7 @@ import cryspy.const as const
 
 def setup_rendering(povfilename, camera_pos=(1, -20, 10), camera_lookat=(0, 0, 0),
     camera_sky=(0, 0, 1), camera_angle=30, width=600, height=400, imagefilename=None,
-    legendlist=[]):
+    legendlist=[], povray_code_lighting=None):
     camerasystem = Camerasystem(
         camera_pos, camera_lookat, camera_sky, camera_angle, width, height
     )
@@ -36,13 +36,16 @@ def setup_rendering(povfilename, camera_pos=(1, -20, 10), camera_lookat=(0, 0, 0
     camstr += "    up <0, %i, 0>\n"%(height)
     camstr += "}\n"
     camstr += ""
-    camstr += "background {color rgb <1, 1, 1>}\n"
-    camstr += "\n"
-#    camstr += "light_source {\n"
-#    camstr += "    <0, 10, 3>\n"
-#    camstr += "    color rgb <1, 1, 1>\n"
-#    camstr += "}\n"
-    camstr += "global_settings { ambient_light rgb <7, 7, 7> }\n"
+    if povray_code_lighting == None:
+        camstr += "background {color rgb <1, 1, 1>}\n"
+        camstr += "\n"
+    #    camstr += "light_source {\n"
+    #    camstr += "    <0, 10, 3>\n"
+    #    camstr += "    color rgb <1, 1, 1>\n"
+    #    camstr += "}\n"
+        camstr += "global_settings { ambient_light rgb <7, 7, 7> }\n"
+    else:
+        camstr += povray_code_lighting
     infile = open(povfilename, "r")
     instr = infile.read()
     infile.close()
