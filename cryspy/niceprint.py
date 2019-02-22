@@ -126,3 +126,5 @@ def print_cif_without_symmetries(liste, atomset, metric):
                 string += "\n"
 
     return string
+
+

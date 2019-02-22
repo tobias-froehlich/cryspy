@@ -626,7 +626,9 @@ class Atomset():
             return Atomset({left ** item for item in self.menge})
         if isinstance(left, geo.Spacegroup):
             atomset = Atomset(set([]))
-            for item in self.menge:
+            liste = list(self.menge)
+            liste = sorted(liste, key=lambda x: x.name)
+            for item in liste:
                 for coset in left.liste_cosets:
                     new_item = coset ** item
                     new_item.name = atomset.nextname(new_item.name)
