@@ -197,6 +197,21 @@ def spacegroup(number):
                                fs("{x+1/4,z+3/4,-y+3/4}"), fs("{-x+3/4, z+1/4, y+3/4}"), fs("{-x+1/4,-z+1/4,-y+1/4}"), fs("{ x+3/4,-z+3/4, y+1/4}"),
                                fs("{z+1/4,y+3/4,-x+3/4}"), fs("{ z+3/4,-y+3/4, x+1/4}"), fs("{-z+3/4, y+1/4, x+3/4}"), fs("{-z+1/4,-y+1/4,-x+1/4}")])
 
+    if number == 221:
+        return geo.Spacegroup(geo.canonical,
+                             [fs("{x,y,z}"), fs("{-x,-y,z}"), fs("{-x,y,-z}"), fs("{x,-y,-z}"),
+                              fs("{z,x,y}"), fs("{z,-x,-y}"), fs("{-z,-x,y}"), fs("{-z,x,-y}"),
+                              fs("{y,z,x}"), fs("{-y,z,-x}"), fs("{y,-z,-x}"), fs("{-y,-z,x}"),
+                              fs("{y,x,-z}"), fs("{-y,-x,-z}"), fs("{y,-x,z}"), fs("{-y,x,z}"),
+                              fs("{x,z,-y}"), fs("{-x,z,y}"), fs("{-x,-z,-y}"), fs("{x,-z,y}"),
+                              fs("{z,y,-x}"), fs("{z,-y,x}"), fs("{-z,y,x}"), fs("{-z,-y,-x}"),
+                              fs("{-x,-y,-z}"), fs("{x,y,-z}"), fs("{x,-y,z}"), fs("{-x,y,z}"),
+                              fs("{-z,-x,-y}"), fs("{-z,x,y}"), fs("{z,x,-y}"), fs("{z,-x,y}"),
+                              fs("{-y,-z,-x}"), fs("{y,-z,x}"), fs("{-y,z,x}"), fs("{y,z,-x}"),
+                              fs("{-y,-x,z}"), fs("{y,x,z}"), fs("{-y,x,-z}"), fs("{y,-x,-z}"),
+                              fs("{-x,-z,y}"), fs("{x,-z,-y}"), fs("{x,z,y}"), fs("{-x,z,-y}"),
+                              fs("{-z,-y,x}"), fs("{-z,y,-x}"), fs("{z,-y,-x}"), fs("{z,y,x}")])
+
     if number == 225:
         sg = geo.Spacegroup(geo.canonical,
                             [fs("{x,y,z}"), fs("{-x,-y,z}"), fs("{-x,y,-z}"), fs("{x,-y,-z}"),

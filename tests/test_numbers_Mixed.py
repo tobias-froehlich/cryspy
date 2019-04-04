@@ -288,14 +288,35 @@ def test_Mixed():
     assert isinstance((f + me).value, uc.UFloat)
     assert f + me == nb.Mixed(f + e)
 
+    assert isinstance(mf + mi, nb.Mixed)
+    assert isinstance((mf + mi).value, float)
+    assert mf + mi == nb.Mixed(f + i)
+    assert isinstance(mf + i, nb.Mixed)
+    assert isinstance((mf + i).value, float)
+    assert mf + i == nb.Mixed(f + i)
+    assert isinstance(f + mi, nb.Mixed)
+    assert isinstance((f + mi).value, float)
+    assert f + mi == nb.Mixed(f + i)
+
+    assert isinstance(mf + mf, nb.Mixed)
+    assert isinstance((mf + mf).value, float)
+    assert mf + mf == nb.Mixed(f + f)
+    assert isinstance(mf + f, nb.Mixed)
+    assert isinstance((mf + f).value, float)
+    assert mf + f == nb.Mixed(f + f)
+    assert isinstance(f + mf, nb.Mixed)
+    assert isinstance((f + mf).value, float)
+    assert f + mf == nb.Mixed(f + f)
+
+
     assert mq + (-q) == nb.Mixed(0)
     assert q + (-mq) == nb.Mixed(0)
     assert me + (-e) == nb.Mixed(0)
     assert e + (-me) == nb.Mixed(0)
     assert mi + (-i) == nb.Mixed(0)
     assert i + (-mi) == nb.Mixed(0)
-    assert mf + (-f) == nb.Mixed(0)
-    assert f + (-mf) == nb.Mixed(0)
+    assert mf + (-f) == nb.Mixed(0.0)
+    assert f + (-mf) == nb.Mixed(0.0)
 
 
 

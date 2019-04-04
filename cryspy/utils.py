@@ -2,6 +2,7 @@ import cryspy
 from cryspy.fromstr import fromstr as fs
 import cryspy.numbers as nb
 import cryspy.geo as geo
+import cryspy.crystal as crystal
 import numpy as np
 
 def calculate_twotheta(metric, wavelength, q):
@@ -336,8 +337,9 @@ def octahedron(name, top, one, two, three, four, bottom,
 def get_nearest_neighbours(atomset, metric, centre, typelist, number):
     atomlist = []
     for atom in atomset.menge:
-        if atom.typ in typelist:
-            atomlist.append(atom)
+        if isinstance(atom, crystal.Atom):
+            if atom.typ in typelist:
+                atomlist.append(atom)
 
     distancelist = []
     for atom in atomlist:

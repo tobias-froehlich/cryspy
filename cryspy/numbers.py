@@ -169,7 +169,7 @@ class Mixed(object):
         assert isinstance(right, Mixed), \
             "Cannot add object of type %s " \
             "to object of type Mixed." % (type(right))
-        if self == -right:
+        if (self == -right) and not isinstance(self.value, float):
             return Mixed(0)
         elif isinstance(self.value, fr.Fraction):
             if isinstance(right.value, fr.Fraction):
