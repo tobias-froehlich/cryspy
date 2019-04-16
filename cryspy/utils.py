@@ -185,7 +185,7 @@ def fill_plusminus_clever(atomset, extraextensions):
     return cryspy.crystal.Atomset(newset)
 
 
-def fill(atomset, extraextensions):
+def fill(atomset, extraextensions, typesonly=None):
     assert isinstance(atomset, cryspy.crystal.Atomset), \
         "First argument of cryspy.utils.fill(...) must be of " \
         "type cryspy.crystal.Atomset."
@@ -200,14 +200,36 @@ def fill(atomset, extraextensions):
             or isinstance(item, float) or isinstance(item, int), \
             "Scond argument of cryspy.utils.fill(...) must be a " \
             "list of three numbers."
-    return fill_plusminus_clever(
-               atomset,
-               [extraextensions[0], extraextensions[0],
-                extraextensions[1], extraextensions[1],
-                extraextensions[2], extraextensions[2]],
-           )
-
-def fill_hexagon(atomset, extraextensions):
+    if typesonly == None:
+        return fill_plusminus_clever(
+                   atomset,
+                   [extraextensions[0], extraextensions[0],
+                    extraextensions[1], extraextensions[1],
+                    extraextensions[2], extraextensions[2]],
+               )
+    else:
+        assert isinstance(typesonly, list), \
+            "Argument typesonly of cryspy.utils.fill(...) must " \
+            "be of type list."
+        for typ in typesonly:
+            assert isinstance(typ, str), \
+                "Argument typesonly of cryspy.utils.fill(...) " \
+                "must be a list of str."
+        atomset1 = cryspy.crystal.Atomset(set([]))
+        for atom in atomset.menge:
+            if isinstance(atom, cryspy.crystal.Atom):
+                if atom.typ in typesonly:
+                    atomset1.add(atom)
+        atomset1 = fill_plusminus_clever(
+            atomset1,
+            [extraextensions[0], extraextensions[0],
+             extraextensions[1], extraextensions[1],
+             extraextensions[2], extraextensions[2]
+            ]
+        )
+        return atomset + atomset1
+        
+def fill_hexagon(atomset, extraextensions, typesonly=None):
     # extraextensions: [radially, down, up]
     #     for example: [0.05, 0.1, 0.5]
     #                  goes 0.05 unit cells larger than the Hexagon,
@@ -226,21 +248,38 @@ def fill_hexagon(atomset, extraextensions):
             or isinstance(item, float) or isinstance(item, int), \
             "Scond argument of cryspy.utils.fill(...) must be a " \
             "list of three numbers."
-    atomset = fill_plusminus_clever(atomset, [0, extraextensions[0],
-                                    0, extraextensions[0],
-                                    extraextensions[1], extraextensions[2]]
-    )
-    atomset =  atomset \
-            + ((atomset + fs("d -1  0 0")) + "_hex1") \
-            + ((atomset + fs("d -1 -1 0")) + "_hex2") \
-            + ((atomset + fs("d  0 -1 0")) + "_hex3")
-    newatomset = cryspy.crystal.Atomset(set([]))
-    for item in atomset.menge:
-        aux = float(item.pos.x() - item.pos.y())
-        if -1 - extraextensions[0] < aux < 1 + extraextensions[0]:
-            newatomset.add(item)
-
-    return newatomset
+    if typesonly == None:
+        atomset = fill_plusminus_clever(atomset, [extraextensions[0], extraextensions[0],
+                                        extraextensions[0], extraextensions[0],
+                                        extraextensions[1], extraextensions[2]]
+        )
+        atomset =  atomset \
+                + ((atomset + fs("d -1  0 0")) + "_hex1") \
+                + ((atomset + fs("d -1 -1 0")) + "_hex2") \
+                + ((atomset + fs("d  0 -1 0")) + "_hex3")
+        newatomset = cryspy.crystal.Atomset(set([]))
+        for item in atomset.menge:
+            aux = float(item.pos.x() - item.pos.y())
+            if -1 - extraextensions[0] < aux < 1 + extraextensions[0]:
+                newatomset.add(item)
+    
+        return newatomset
+    else:
+        assert isinstance(typesonly, list), \
+            "Argument typesonly of cryspy.utils.fill_hexagon(...) must " \
+            "be of type list."
+        for typ in typesonly:
+            assert isinstance(typ, str), \
+                "Argument typesonly of cryspy.utils.fill_hexagon(...) " \
+                "must be a list of str."
+        atomset1 = cryspy.crystal.Atomset(set([]))
+        for atom in atomset.menge:
+            if isinstance(atom, cryspy.crystal.Atom):
+                if atom.typ in typesonly:
+                    atomset1.add(atom)
+        atomset1 = cryspy.utils.fill_hexagon(atomset1, extraextensions)
+        return atomset + atomset1
+       
     
 def octahedron(name, top, one, two, three, four, bottom, 
                facecolor, faceopacity, plotedges, edgecolor, edgewidth):
@@ -1019,6 +1058,44 @@ def axes_box(thickness, color):
         cryspy.crystal.Bond("c2", fs("p 0 1 0"), fs("p 0 1 1")),
         cryspy.crystal.Bond("c3", fs("p 1 1 0"), fs("p 1 1 1")),
         cryspy.crystal.Bond("c4", fs("p 1 0 0"), fs("p 1 0 1")),
+    ]
+    for bond in bonds:
+        bond.set_color(color)
+        bond.set_thickness(thickness)
+    
+    return cryspy.crystal.Subset(
+        "Axes_Box",
+        fs("p 0 0 0"), 
+        {bond for bond in bonds}
+    )
+
+def axes_box_hexagon(thickness, color):
+    bonds = [
+        cryspy.crystal.Bond("a01", fs("p 0 0 0"), fs("p 1 0 0")),
+        cryspy.crystal.Bond("a02", fs("p 0 0 0"), fs("p 0 1 0")),
+        cryspy.crystal.Bond("a03", fs("p 0 0 0"), fs("p -1 -1 0")),
+        cryspy.crystal.Bond("a04", fs("p 0 0 1"), fs("p 1 0 1")),
+        cryspy.crystal.Bond("a05", fs("p 0 0 1"), fs("p 0 1 1")),
+        cryspy.crystal.Bond("a06", fs("p 0 0 1"), fs("p -1 -1 1")),
+        cryspy.crystal.Bond("a07", fs("p 1 0 0"), fs("p 1 1 0")),
+        cryspy.crystal.Bond("a08", fs("p 1 1 0"), fs("p 0 1 0")),
+        cryspy.crystal.Bond("a09", fs("p 0 1 0"), fs("p -1 0 0")),
+        cryspy.crystal.Bond("a10", fs("p -1 0 0"), fs("p -1 -1 0")),
+        cryspy.crystal.Bond("a11", fs("p -1 -1 0"), fs("p 0 -1 0")),
+        cryspy.crystal.Bond("a12", fs("p 0 -1 0"), fs("p 1 0 0")),
+        cryspy.crystal.Bond("a13", fs("p 1 0 1"), fs("p 1 1 1")),
+        cryspy.crystal.Bond("a14", fs("p 1 1 1"), fs("p 0 1 1")),
+        cryspy.crystal.Bond("a15", fs("p 0 1 1"), fs("p -1 0 1")),
+        cryspy.crystal.Bond("a16", fs("p -1 0 1"), fs("p -1 -1 1")),
+        cryspy.crystal.Bond("a17", fs("p -1 -1 1"), fs("p 0 -1 1")),
+        cryspy.crystal.Bond("a18", fs("p 0 -1 1"), fs("p 1 0 1")),
+        cryspy.crystal.Bond("a19", fs("p 1 0 0"), fs("p 1 0 1")),
+        cryspy.crystal.Bond("a20", fs("p 1 1 0"), fs("p 1 1 1")),
+        cryspy.crystal.Bond("a21", fs("p 0 1 0"), fs("p 0 1 1")),
+        cryspy.crystal.Bond("a22", fs("p -1 0 0"), fs("p -1 0 1")),
+        cryspy.crystal.Bond("a23", fs("p -1 -1 0"), fs("p -1 -1 1")),
+        cryspy.crystal.Bond("a24", fs("p 0 -1 0"), fs("p 0 -1 1")),
+        cryspy.crystal.Bond("a25", fs("p 0 0 0"), fs("p 0 0 1")),
     ]
     for bond in bonds:
         bond.set_color(color)
