@@ -3,6 +3,7 @@ from cryspy.fromstr import fromstr as fs
 import cryspy.numbers as nb
 import cryspy.geo as geo
 import cryspy.crystal as crystal
+import cryspy.const as const
 import numpy as np
 
 def calculate_twotheta(metric, wavelength, q):
@@ -385,9 +386,31 @@ def get_nearest_neighbours(atomset, metric, centre, typelist, number):
         distancelist.append(float(metric.length(centre - atom.pos)))
 
     atomlist = [i for (j, i) in sorted(zip(distancelist, atomlist), key=lambda pair: pair[0])]
-    atomlist = atomlist[0:6]
+    atomlist = atomlist[0:number]
     return atomlist
 
+def find_atom(atomset, metric, pos, typ=None):
+    atomlist = []
+    for atom in atomset.menge:
+        if isinstance(atom, crystal.Atom):
+            if typ == None:
+                atomlist.append(atom)
+            elif atom.typ == typ:
+                atomlist.append(atom)
+
+    distancelist = []
+    for atom in atomlist:
+        distancelist.append(float(metric.length(pos - atom.pos)))
+
+    atomlist = [i for (j, i) in sorted(zip(distancelist, atomlist), key=lambda pair: pair[0])]
+    found_atom = atomlist[0]
+    assert float(metric.length(found_atom.pos - pos)) <= const.utils__delta_for_finding, \
+        "Error: There is no atom near the position \n %s.\n" \
+        "Maybe it is useful to increase the number " \
+        "const.utils__delta_for_finding which gives the " \
+        "tolerance."%(str(pos))
+    return found_atom
+   
 
 def auto_octahedron(name, atomset, metric, centre, typelist, 
                facecolor, faceopacity, plotedges, edgecolor, edgewidth):
@@ -1107,3 +1130,68 @@ def axes_box_hexagon(thickness, color):
         {bond for bond in bonds}
     )
 
+def make_structures_similar(atomset1, atomset2, metric):
+    # Two crystal structures might be very similar, but
+    # small deviations can lead to the effect that
+    # an atom is outside the unit cell. If the structures
+    # are generating by applying a Spacegroup to an Atomset,
+    # all atoms lie inside the unit cell. Thus, the positions
+    # in the Atomset can be totally different even though the
+    # differences are only very small. This function compares
+    # the positions and corrects atomset2 in order to fit
+    # to atomset1.
+    """
+    relevance_delta = 0.05 # Only atoms that are <= 0.05 relative units
+                           # away from the unit cell border are taken
+                           # into account.
+
+    def seperate_to_relevant_and_notrelevant(atomset):
+        relevant = cryspy.crystal.Atomset(set([]))
+        notrelevant = cryspy.crystal.Atomset(set([]))
+        for atom in atomset.menge:
+            x = float(atom.pos.x())
+            y = float(atom.pos.y())
+            z = float(atom.pos.z())
+            if      (relevance_delta < x < 1 - relevance_delta) \
+                and (relevance_delta < y < 1 - relevance_delta) \
+                and (relevance_delta < z < 1 - relevance_delta):
+                    notrelevant.add(atom)
+            else:
+                    relevant.add(atom)
+        return (relevant, notrelevant)
+
+    (relevant1, notrelevant1) = seperate_to_relevant_and_notrelevant(atomset1)
+    (relevant2, notrelevant2) = seperate_to_relevant_and_notrelevant(atomset2)
+
+    relevant2_neu = cryspy.crystal.Atomset(set([]))
+    for atom2 in relevant2.menge:
+        atoms2 = []
+        for zshift in [fs("d 0 0 -1"), fs("d 0 0 0"), fs("d 0 0 +1")]:
+            for yshift in [fs("d 0 -1 0"), fs("d 0 0 0"), fs("d 0 +1 0")]:
+                for xshift in [fs("d -1 0 0"), fs("d 0 0 0"), fs("d +1 0 0")]:
+                    atoms2.append(atom2 + xshift + yshift + zshift)
+        distances = []
+        for atom1 in relevant1.menge:
+            if atom1.typ == atom2.typ:
+                distances_ = []
+                for atom2_ in atoms2:
+                    distances_.append(float(metric.length(atom2_.pos - atom1.pos)))
+                index = distances_.index(min(distances))
+                
+                assert distances[index] <= 0.5, \
+                    "Error: The atom distance is greater than 0.5 Angstroem!"
+    """
+    atomset2_all = cryspy.crystal.Atomset(set([]))
+    for zshift in [fs("d 0 0 -1"), fs("d 0 0 0"), fs("d 0 0 +1")]:
+        for yshift in [fs("d 0 -1 0"), fs("d 0 0 0"), fs("d 0 +1 0")]:
+            for xshift in [fs("d -1 0 0"), fs("d 0 0 0"), fs("d +1 0 0")]:
+                atomset2_all += (atomset2 + (xshift + yshift + zshift))
+
+    atomset2_neu = cryspy.crystal.Atomset(set([]))
+    for atom2 in atomset2_all.menge:
+        for atom1 in atomset1.menge:
+            if atom1.typ == atom2.typ:
+                if float(metric.length(atom1.pos - atom2.pos)) <= 0.5:
+                    atomset2_neu.add(atom2)
+
+    return atomset2_neu

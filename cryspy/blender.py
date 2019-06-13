@@ -6,7 +6,7 @@ from cryspy.fromstr import fromstr as fs
 from cryspy import tables
 
 
-def make_blender_script(atomset, metric, structurename, outfilename):
+def make_blender_script(atomset, metric, structurename, outfilename, pos_in_names=False):
     assert isinstance(atomset, crystal.Atomset), \
         "atomset must be of type crystal.Atomset."
     assert isinstance(metric, geo.Metric), \
@@ -112,13 +112,13 @@ def make_blender_script(atomset, metric, structurename, outfilename):
     outstr += "posobject = bpy.context.object\n"
     outstr += "posobject.name = '%s.Positions'\n" % (structurename)
 
-    outstr += draw_atomset_or_subset(structurename, schmidt ** atomset)
+    outstr += draw_atomset_or_subset(structurename, schmidt ** atomset, pos_in_names=pos_in_names, schmidt=schmidt)
 
     outfile = open(outfilename, "w")
     outfile.write(outstr)
     outfile.close()
 
-def draw_atomset_or_subset(structurename, atomset):
+def draw_atomset_or_subset(structurename, atomset, pos_in_names=False, schmidt=None):
     outstr = ""
     # Inspect atomset for different kinds of object and sort them into different lists
     typs = []
@@ -172,9 +172,14 @@ def draw_atomset_or_subset(structurename, atomset):
         z = float(atom.pos.z())
         outstr += "posobject.data.vertices.add(1)\n"
         outstr += "posobject.data.vertices[-1].co = (%f, %f, %f)\n" % (x, y, z)
+        if pos_in_names:
+            pos = schmidt.inv() ** atom.pos
+            name = "%s_%.2f_%.2f_%.2f"%(atom.typ, float(pos.x()), float(pos.y()), float(pos.z()))
+        else:
+            name = atom.name
         outstr += "ob = bpy.data.objects.new( \
             '%s.Atom%03i(%s)', bpy.data.meshes['%s.mesh.%s'])\n" \
-            % (structurename, atomnumber, atom.name, structurename, atom.typ)
+            % (structurename, atomnumber, name, structurename, atom.typ)
         outstr += "ob.location = (%f, %f, %f)\n" % (x, y, z)
         outstr += "bpy.ops.object.shade_smooth()\n"
         outstr += "bpy.context.scene.objects.link(ob)\n"

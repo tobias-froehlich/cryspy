@@ -20,6 +20,11 @@ def spacegroup(number):
         return geo.Spacegroup(geo.canonical,
                               [fs("{x,y,z}"), fs("{-x,y+1/2,-z}")])
 
+    if number == 5:
+        return geo.Spacegroup(geo.canonical,
+                              [fs("{x,y,z}"), fs("{-x,y,-z}"),
+                               fs("{x+1/2,y+1/2,z}"), fs("{-x+1/2,y+1/2,-z}")])
+
     if number == 7:
         return geo.Spacegroup(geo.canonical,
                               [fs("{x,y,z}"), fs("{x,-y,z+1/2}")])

@@ -1,3 +1,5 @@
+# ============== blender =======================
+
 blender__thickness_of_axis_shaft = 0.05
 blender__num_of_segments_of_axis_shaft = 6  # 4...32: rough...fine
 blender__thickness_of_axis_tip = 0.2
@@ -26,6 +28,8 @@ blender__diffuse_light = 0.5
 # Difference of the cases, whether you make segments 4 or 128,
 # is for the *.blend-file a difference of ca. 50 KB per arrow.
 
+# ==================== povray =========================
+
 povray__thickness_of_axis_shaft = blender__thickness_of_axis_shaft
 povray__axes_color = blender__axes_color
 povray__thickness_of_axis_tip = blender__thickness_of_axis_tip
@@ -45,4 +49,5 @@ povray__std_momentum_color = blender__std_momentum_color
 povray__thickness_of_bond_arrow_tip = blender__thickness_of_bond_arrow_tip
 povray__height_of_bond_arrow_tip = blender__height_of_bond_arrow_tip
 
-
+# ===================== utils ===========================
+utils__delta_for_finding = 0.2 # Angstroem. Used in utils.find_atom().
