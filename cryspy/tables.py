@@ -287,11 +287,14 @@ def formfactor(atomtype, sintl):
     return f
 
 
-def formfactorparameters(atomtype):
+def formfactorparameters_low_sinthetabylambda(atomtype):
     assert isinstance(atomtype, str), \
         "atomtype must be of type str."
 
+    # This is valid for 0 < sin(theta)/lambda < 2.0 Angstroem^-1.
     # Data from [international tables C, table 6.1.1.4].
+    # For calculation of the form factor use
+    # [international tables C, equation 6.1.1.15]
 
     if atomtype == "O":
         pars = [3.04850, 13.2771, 2.28680, 5.70110, 1.54630,
@@ -320,6 +323,29 @@ def formfactorparameters(atomtype):
     if atomtype == "Ir":
         pars = [27.3049, 1.59279, 16.7296, 8.86553, 15.6115,
                 0.417916, 5.83377, 45.0011, 11.4722]
+
+    return pars
+
+def formfactorparameters_high_sinthetabylambda(atomtype):
+    assert isinstance(atomtype, str), \
+        "atomtype must be of type str."
+
+    # This is valid for 2 Angstroem^-1 < sin(theta/lambda) < 6 Angstroem^-1
+    # Data from [international tables C, table 6.1.1.5].
+    # For calculation of the form factor use 
+    # [international tables C, equation 6.1.1.16].
+
+    if atomtype == "O":
+        pars = [1.30530, -0.83742, -0.16738, 0.47500]
+
+    if atomtype == "Ba":
+        pars = [4.51070, -1.72570, 3.41320, -2.59590]
+
+    if atomtype == "Ce":
+        pars = [4.69060, -1.81790, 3.60280, -2.70670]
+
+    if atomtype == "Ir":
+        pars = [3.53130, -0.37856, -0.41174, 0.75967]
 
     return pars
 
