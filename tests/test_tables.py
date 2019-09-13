@@ -12,6 +12,10 @@ def test_cryspy_tables():
 #    sg = tb.spacegroup(2)
 #    assert sg.is_really_a_spacegroup() == True
 #    sg = tb.spacegroup(4)
+    sg = tb.spacegroup(5)
+    assert sg.is_really_a_spacegroup() == True
+    sg = tb.spacegroup(6)
+    assert sg.is_really_a_spacegroup() == True
 #    assert sg.is_really_a_spacegroup() == True
 #    sg = tb.spacegroup(7)
 #    assert sg.is_really_a_spacegroup() == True
@@ -30,6 +34,8 @@ def test_cryspy_tables():
 #    sg = tb.spacegroup(15)
 #    assert sg.is_really_a_spacegroup() == True
 #    sg = tb.spacegroup(19)
+    sg = tb.spacegroup(20)
+    assert sg.is_really_a_spacegroup() == True
 #    assert sg.is_really_a_spacegroup() == True
 #    sg = tb.spacegroup(26)
 #    assert sg.is_really_a_spacegroup() == True
@@ -37,6 +43,12 @@ def test_cryspy_tables():
 #    assert sg.is_really_a_spacegroup() == True
 #    sg = tb.spacegroup(33)
 #    assert sg.is_really_a_spacegroup() == True
+    sg = tb.spacegroup(36)
+    assert sg.is_really_a_spacegroup() == True
+    sg = tb.spacegroup(38)
+    assert sg.is_really_a_spacegroup() == True
+    sg = tb.spacegroup(40)
+    assert sg.is_really_a_spacegroup() == True
 #    sg = tb.spacegroup(46)
 #    assert sg.is_really_a_spacegroup() == True
 #    sg = tb.spacegroup(59)

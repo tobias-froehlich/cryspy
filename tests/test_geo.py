@@ -47,6 +47,8 @@ def test_Rec():
     x = geo.Rec(nb.Matrix([[0, 0, 1.00000000, 0]]))
     y = geo.Rec(nb.Matrix([[0, 0, 0.99999999, 0]]))
     assert hash(x) == hash(y)
+    assert q * nb.Mixed(2) == geo.Rec(nb.Matrix([[2, 4, 6, 0]]))
+
 
 
 def test_Axial():

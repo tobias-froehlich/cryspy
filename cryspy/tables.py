@@ -25,6 +25,10 @@ def spacegroup(number):
                               [fs("{x,y,z}"), fs("{-x,y,-z}"),
                                fs("{x+1/2,y+1/2,z}"), fs("{-x+1/2,y+1/2,-z}")])
 
+    if number == 6:
+        return geo.Spacegroup(geo.canonical,
+                              [fs("{x,y,z}"), fs("{x,-y,z}")])
+
     if number == 7:
         return geo.Spacegroup(geo.canonical,
                               [fs("{x,y,z}"), fs("{x,-y,z+1/2}")])
@@ -64,6 +68,11 @@ def spacegroup(number):
         return geo.Spacegroup(geo.canonical,
                               [fs("{x,y,z}"), fs("{-x+1/2,-y,z+1/2}"), fs("{-x,y+1/2,-z+1/2}"), fs("{x+1/2,-y+1/2,-z}")])
 
+    if number == 20:
+        return geo.Spacegroup(geo.canonical,
+                              [fs("{x,y,z}"), fs("{-x,-y,z+1/2}"), fs("{-x,y,-z+1/2}"), fs("{x,-y,-z}"),
+                               fs("{x+1/2,y+1/2,z}"), fs("{-x+1/2,-y+1/2,z+1/2}"), fs("{-x+1/2,y+1/2,-z+1/2}"), fs("{x+1/2,-y+1/2,-z}")])
+
     if number == 26:
         return geo.Spacegroup(geo.canonical,
                               [fs("{x,y,z}"), fs("{-x,-y,z+1/2}"), fs("{x,-y,z+1/2}"), fs("{-x,y,z}")])
@@ -75,6 +84,21 @@ def spacegroup(number):
     if number == 33:
         return geo.Spacegroup(geo.canonical,
                               [fs("{x,y,z}"), fs("{-x,-y,z+1/2}"), fs("{x+1/2,-y+1/2,z}"), fs("{-x+1/2,y+1/2,z+1/2}")])
+
+    if number == 36:
+        return geo.Spacegroup(geo.canonical,
+                              [fs("{x,y,z}"), fs("{-x,-y,z+1/2}"), fs("{x,-y,z+1/2}"), fs("{-x,y,z}"),
+                               fs("{x+1/2,y+1/2,z}"), fs("{-x+1/2,-y+1/2,z+1/2}"), fs("{x+1/2,-y+1/2,z+1/2}"), fs("{-x+1/2,y+1/2,z}")])
+
+    if number == 38:
+        return geo.Spacegroup(geo.canonical,
+                              [fs("{x,y,z}"), fs("{-x,-y,z}"), fs("{x,-y,z}"), fs("{-x,y,z}"),
+                               fs("{x,y+1/2,z+1/2}"), fs("{-x,-y+1/2,z+1/2}"), fs("{x,-y+1/2,z+1/2}"), fs("{-x,y+1/2,z+1/2}")])
+
+    if number == 40:
+        return geo.Spacegroup(geo.canonical,
+                              [fs("{x,y,z}"), fs("{-x,-y,z}"), fs("{x+1/2,-y,z}"), fs("{-x+1/2,y,z}"),
+                               fs("{x,y+1/2,z+1/2}"), fs("{-x,-y+1/2,z+1/2}"), fs("{x+1/2,-y+1/2,z+1/2}"), fs("{-x+1/2,y+1/2,z+1/2}")])
 
     if number == 46:
         return geo.Spacegroup(geo.canonical,
@@ -269,25 +293,31 @@ def spacegroup(number):
 def formfactor(atomtype, sintl):
     assert isinstance(atomtype, str), \
         "atomtype must be of type str."
-    assert isinstance(sintl, numbers.Mixed), \
+    assert isinstance(sintl, numbers.Mixed) or isinstance(sintl, int) or isinstance(sintl, float),\
         "sintl (sin(theta)/lambda) must be of type numbers.Mixed."
-    if not (0.0 <= float(sintl) <= 2.0):
-        print("Warning: sintl must be smaller than 2.0 Angstrom^(-1).")
+    if not (0.0 <= float(sintl) <= 6.0):
+        print("Warning: sintl must be smaller than 6.0 Angstrom^(-1).")
 
     # Formula from [international tables C, S565 eq. 6.1.1.15].
-
-    [a1, b1, a2, b2, a3, b3, a4, b4, c] = formfactorparameters(atomtype)
-    sintl2 = float(sintl) ** 2
-    f = a1 * np.exp(-b1 * sintl2) \
-    + a2 * np.exp(-b2 * sintl2) \
-    + a3 * np.exp(-b3 * sintl2) \
-    + a4 * np.exp(-b4 * sintl2) \
-    + c
-
+    
+    if float(sintl) <= 2:
+        [a1, b1, a2, b2, a3, b3, a4, b4, c] = formfactorparameters_low_sintl(atomtype)
+        sintl2 = float(sintl) ** 2
+        f = a1 * np.exp(-b1 * sintl2) \
+        + a2 * np.exp(-b2 * sintl2) \
+        + a3 * np.exp(-b3 * sintl2) \
+        + a4 * np.exp(-b4 * sintl2) \
+        + c
+    else:
+        [a0, a1, a2, a3] = formfactorparameters_high_sintl(atomtype)
+        a2 = a2 / 10
+        a3 = a3 / 100
+        a = [a0, a1, a2, a3]
+        f = np.exp(sum([a[i] * sintl**i for i in [0, 1, 2, 3]]))
     return f
 
 
-def formfactorparameters_low_sinthetabylambda(atomtype):
+def formfactorparameters_low_sintl(atomtype):
     assert isinstance(atomtype, str), \
         "atomtype must be of type str."
 
@@ -326,7 +356,7 @@ def formfactorparameters_low_sinthetabylambda(atomtype):
 
     return pars
 
-def formfactorparameters_high_sinthetabylambda(atomtype):
+def formfactorparameters_high_sintl(atomtype):
     assert isinstance(atomtype, str), \
         "atomtype must be of type str."
 

@@ -238,6 +238,8 @@ class Rec:
     def __mul__(self, right):
         if isinstance(right, Dif):
             return (self.value * right.value).liste[0].liste[0]
+        elif isinstance(right, nb.Mixed):
+            return Rec(self.value * right)
         else:
             return NotImplemented
 
