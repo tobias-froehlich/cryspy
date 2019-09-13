@@ -147,6 +147,17 @@ def spacegroup(number):
                                fs("{-x+1/2,-y+1/2,-z+1/2}"), fs("{x+1/2,y+1/2,-z+1/2}"), fs("{y+1/2,-x+1/2,-z+1/2}"), fs("{-y+1/2,x+1/2,-z+1/2}"),
                                fs("{x+1/2,-y+1/2,z+1/2}"), fs("{-x+1/2,y+1/2,z+1/2}"), fs("{-y+1/2,-x+1/2,z+1/2}"), fs("{y+1/2,x+1/2,z+1/2}")])
 
+    if number == 140:
+        return geo.Spacegroup(geo.canonical,
+                              [fs("{x,y,z}"), fs("{-x,-y,z}"), fs("{-y,x,z}"), fs("{y,-x,z}"),
+                               fs("{-x,y,-z+1/2}"), fs("{x,-y,-z+1/2}"), fs("{y,x,-z+1/2}"), fs("{-y,-x,-z+1/2}"),
+                               fs("{-x,-y,-z}"), fs("{x,y,-z}"), fs("{y,-x,-z}"), fs("{-y,x,-z}"),
+                               fs("{x,-y,z+1/2}"), fs("{-x,y,z+1/2}"), fs("{-y,-x,z+1/2}"), fs("{y,x,z+1/2}"),
+                               fs("{x,y,z+1/2}"), fs("{-x,-y,z+1/2}"), fs("{-y,x,z+1/2}"), fs("{y,-x,z+1/2}"),
+                               fs("{-x,y,-z}"), fs("{x,-y,-z}"), fs("{y,x,-z}"), fs("{-y,-x,-z}"),
+                               fs("{-x,-y,-z+1/2}"), fs("{x,y,-z+1/2}"), fs("{y,-x,-z+1/2}"), fs("{-y,x,-z+1/2}"),
+                               fs("{x,-y,z}"), fs("{-x,y,z}"), fs("{-y,-x,z}"), fs("{y,x,z}")])
+
     if number == 142:
         return geo.Spacegroup(geo.canonical,
                               [fs("{x,y,z}"), fs("{-x+1/2,-y+1/2,z+1/2}"), fs("{-y,x+1/2,z+1/4}"), fs("{y+1/2,-x,z+3/4}"),
